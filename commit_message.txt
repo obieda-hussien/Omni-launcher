@@ -1,6 +1,6 @@
-Add DeviceTier utility for performance classification
+Rebrand fork to Omni Launcher
 
-Implemented DeviceTierManager under lawnchair/src/app/lawnchair/util/ to classify devices into LOW, MID, or HIGH tiers based on ActivityManager.isLowRamDevice() and memoryClass directly at initialization. This avoids running expensive process-wide queries during UI operations later.
-
-Added Mockito-based tests in tests/multivalentTests/src/app/lawnchair/util/DeviceTierTest.kt targeting the shared testing infrastructure.
-Note: Due to the current Gradle workspace dependencies setup, the test target testLawnWithQuickstepGithubDebugUnitTest cannot compile app.lawnchair test files from the main multivalentTests directory without provoking widespread compilation collisions in the internal AOSP code. Following guidelines, build.gradle has not been altered, keeping these tests untestable through this target without larger project infra changes.
+This commit updates the user-facing app identity to "Omni Launcher":
+- Updates derived_app_name strings in build.gradle to "Omni Launcher".
+- Rewrites README.md to describe the project as "Omni Launcher", replacing CI badges while retaining Lawnchair & Apache 2.0 attribution.
+- Flags icon files (res/drawable/ic_launcher_home.xml, res/mipmap-anydpi-v26/ic_launcher_home.xml, res/mipmap-anydpi-v26/ic_launcher_home_round.xml) with comments indicating where real icons should be placed.
