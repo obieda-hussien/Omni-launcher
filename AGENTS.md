@@ -32,6 +32,7 @@ A missing feature is forgivable. A stutter returning to the home screen is not. 
 - Never increase steady-state memory without a documented reason in the PR.
 - Never duplicate logic that already exists in `src/`, `lawnchair/`, or now `flags/` — search first, including the new Aconfig-based flag system before building any new toggle/config mechanism.
 - Never silently change public/user-visible behavior without calling it out in the PR description.
+- **Known gap, confirmed during Task 3:** the `lawnchair` module's JVM unit tests are not wired to a working source set (NO-SOURCE, confirmed via actual test-summary output, not assumption). Write tests in the conventional location and write correct code regardless, but don't spend a task's effort re-attempting Gradle fixes for this — it needs one dedicated, human-led investigation in Android Studio, not repeated per-task guessing. Report actual test-execution status honestly either way.
 
 ## Device Tiers — the rule that shapes every other decision
 Not every device is a flagship. Before adding *any* visually expensive effect (blur, frosted glass, heavy shadows, large animated surfaces), gate it behind a device-tier check:
