@@ -37,6 +37,7 @@ class DeviceTierManager private constructor(context: Context) {
         @Volatile
         private var instance: DeviceTierManager? = null
 
+        // Using double-checked locking instead of LawnchairApp's Application subclass pattern because this isn't instantiated by the OS
         fun getInstance(context: Context): DeviceTierManager {
             return instance ?: synchronized(this) {
                 instance ?: DeviceTierManager(context.applicationContext ?: context).also { instance = it }
