@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Placeholder Omni Launcher adaptive round icon.
+  ~ TODO: Replace referenced foreground/background/monochrome assets with final Omni branding art.
+  -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_home_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_home_foreground"/>
+    <monochrome android:drawable="@drawable/ic_launcher_home_monochrome"/>
+</adaptive-icon>
