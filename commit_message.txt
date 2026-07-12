@@ -1,0 +1,6 @@
+Add DeviceTier utility for performance classification
+
+Implemented DeviceTierManager under lawnchair/src/app/lawnchair/util/ to classify devices into LOW, MID, or HIGH tiers based on ActivityManager.isLowRamDevice() and memoryClass directly at initialization. This avoids running expensive process-wide queries during UI operations later.
+
+Added Mockito-based tests in tests/multivalentTests/src/app/lawnchair/util/DeviceTierTest.kt targeting the shared testing infrastructure.
+Note: Due to the current Gradle workspace dependencies setup, the test target testLawnWithQuickstepGithubDebugUnitTest cannot compile app.lawnchair test files from the main multivalentTests directory without provoking widespread compilation collisions in the internal AOSP code. Following guidelines, build.gradle has not been altered, keeping these tests untestable through this target without larger project infra changes.
