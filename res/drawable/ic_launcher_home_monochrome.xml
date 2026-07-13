@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Omni Launcher adaptive icon — monochrome layer (Android 13+ themed/Material You icons).
+     Fill color is a placeholder black; the system re-tints this at runtime. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M 85.049,46.258 A 32,32 0 1,1 67.016,24.767 L 62.541,34.816 A 21,21 0 1,0 74.376,48.92 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M 64.779,29.791 m -5.5,0 a 5.5,5.5 0 1,0 11,0 a 5.5,5.5 0 1,0 -11,0" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M 79.713,47.589 m -5.5,0 a 5.5,5.5 0 1,0 11,0 a 5.5,5.5 0 1,0 -11,0" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M 58.602,27.903 m -3.41,0 a 3.41,3.41 0 1,0 6.82,0 a 3.41,3.41 0 1,0 -6.82,0" />
+</vector>
