@@ -42,8 +42,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
         with:
-          cache-encryption-key: Da25KUVSE5jbGds2zXmfXw==
-      - name: Write sign info
+                - name: Write sign info
         if: github.repository_owner == 'LawnchairLauncher'
         run: |
           if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
@@ -129,9 +128,9 @@ jobs:
     steps:
       - name: Check
         run: |
-          results=$(tr -d '\n' <<< '${{ toJSON(needs.*.result) }}')
-          if ! grep -q -v -E '(failure|cancelled)' <<< "$results"; then
-            echo "One or more required jobs failed"
+          if [[ "${{ needs.build-debug-apk.result }}" != "success" ||
+                "${{ needs.check-style.result }}" != "success" ]]; then
+            echo "One or more required jobs failed, were cancelled, or were skipped"
             exit 1
           fi
           echo "All required jobs completed successfully."
