@@ -53,7 +53,9 @@ internal object AppMatcher {
     fun match(appName: String, query: String): MatchResult {
         val app = normalize(appName)
         val normalizedQuery = normalize(query)
-        if (app.isEmpty() || normalizedQuery.isEmpty()) return MatchResult(0f, MatchType.NO_MATCH)
+        // Empty drawer search must keep showing apps, as it did before normalization.
+        if (normalizedQuery.isEmpty()) return MatchResult(0.9f, MatchType.DIRECT_PREFIX)
+        if (app.isEmpty()) return MatchResult(0f, MatchType.NO_MATCH)
 
         // Rule 0: Exact Match
         if (app == normalizedQuery) return MatchResult(1.0f, MatchType.EXACT_MATCH)
