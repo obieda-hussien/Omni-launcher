@@ -1,12 +1,14 @@
-name: Build release APK
+name: Build unsigned Omni Launcher release APK
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  build-release-apk:
+  build-unsigned-release:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
         with:
@@ -16,23 +18,24 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-encryption-key: Da25KUVSE5jbGds2zXmfXw==
-      - name: Write sign info
-        if: github.repository_owner == 'LawnchairLauncher'
+      - name: Build unsigned GitHub release APK
+        run: ./gradlew assembleLawnWithQuickstepGithubRelease
+      - name: Verify APK is NOT signed
+        shell: bash
         run: |
-          if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
-            echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> keystore.properties
-            echo keyAlias='${{ secrets.KEY_ALIAS }}' >> keystore.properties
-            echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> keystore.properties
-            echo storeFile='${{ github.workspace }}/key.jks' >> keystore.properties
-            echo ${{ secrets.KEYSTORE }} | base64 --decode > ${{ github.workspace }}/key.jks
+          apk=$(find build/outputs/apk -type f -name 'OmniLauncher.*.github.release.apk' -print -quit)
+          if [ -z "$apk" ]; then
+            echo "Unsigned GitHub release APK missing"
+            exit 1
           fi
-      - name: Build release APK
-        run: ./gradlew assembleLawnWithQuickstepGithubRelease bundleLawnWithQuickstepPlayRelease
-      - name: Upload artifact
+          if "$ANDROID_HOME/build-tools/36.1.0/apksigner" verify "$apk"; then
+            echo "Refusing to distribute an unexpectedly signed release APK"
+            exit 1
+          fi
+          echo "Unsigned release verified: $apk"
+      - name: Upload unsigned release APK
         uses: actions/upload-artifact@v6
         with:
-          name: Release APK
-          path: build/outputs/*
-          
+          name: OmniLauncher-unsigned-release
+          path: build/outputs/apk/**/*.apk
+          if-no-files-found: error
