@@ -12,6 +12,8 @@ at https://github.com/LawnchairLauncher/lawnchair.
 - [ ] Profile game -> Home cold/warm first frame on the physical HOT 10S.
 - [ ] Analyze icon and widget population, blocking preference reads and ANRs
       against recorded traces; patch confirmed bottlenecks in separate PRs.
+- [x] Serialize Overview command queue access on main and recover bookkeeping
+      after a stale command when another button request arrives.
 - [ ] Reproduce and isolate landscape / permanently inert Recents with logcat
       and SystemUI / Quickstep state. No unprivileged APK can guarantee an
       OEM SystemUI repair.
