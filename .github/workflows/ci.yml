@@ -130,9 +130,9 @@ jobs:
     steps:
       - name: Check
         run: |
-          results=$(tr -d '\n' <<< '${{ toJSON(needs.*.result) }}')
-          if ! grep -q -v -E '(failure|cancelled)' <<< "$results"; then
-            echo "One or more required jobs failed"
+          if [[ "${{ needs.build-debug-apk.result }}" != "success" ||
+                "${{ needs.check-style.result }}" != "success" ]]; then
+            echo "Required build or style checks failed, were cancelled, or were skipped"
             exit 1
           fi
           echo "All required jobs completed successfully."

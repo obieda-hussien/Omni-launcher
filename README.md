@@ -51,3 +51,11 @@ third-party launcher alone cannot replace or repair that privileged component.
 
 Backup restoration preserves other databases in the application's data directory.
 A wallpaper-only restore does not reset the home layout.
+
+
+## Game-return and Recents diagnostics
+
+See [Home and Recents diagnostics](docs/home-return-recents-diagnostics.md) for a
+physical-device reproduction matrix, logcat commands and limitations of
+unprivileged OEM Android 11 SystemUI/Quickstep integrations. CI builds alone
+do not establish that the hardware Recents button has been repaired.

@@ -1,10 +1,13 @@
-name: Build release APK
+name: Build unsigned Omni Launcher release APK
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  build-release-apk:
+  build-unsigned-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -15,15 +18,26 @@ jobs:
           distribution: 'zulu'
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-encryption-key: Da25KUVSE5jbGds2zXmfXw==
-      - name: Build release APK
-        run: ./gradlew assembleLawnWithQuickstepGithubRelease bundleLawnWithQuickstepPlayRelease
-      - name: Upload artifact
+      - name: Build unsigned GitHub release APK
+        run: ./gradlew assembleLawnWithQuickstepGithubRelease
+      - name: Verify unsigned APK and archive integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=$(find build/outputs/apk -type f -name 'OmniLauncher.*.github.release.unsigned.apk' -print -quit)
+          if [ -z "$apk" ]; then
+            echo "Unsigned GitHub release APK missing"
+            exit 1
+          fi
+          unzip -t "$apk" >/dev/null
+          if "$ANDROID_HOME/build-tools/36.1.0/apksigner" verify "$apk"; then
+            echo "Refusing to distribute an unexpectedly signed release APK"
+            exit 1
+          fi
+          echo "APK archive is valid and no signing certificate was detected: $apk"
+      - name: Upload unsigned release APK
         uses: actions/upload-artifact@v6
         with:
-          name: Omni Launcher unsigned release
-          path: |
-            build/outputs/apk/**/*.apk
-            build/outputs/bundle/**/*.aab
-          
+          name: OmniLauncher-unsigned-release
+          path: build/outputs/apk/**/*.unsigned.apk
+          if-no-files-found: error
