@@ -47,3 +47,7 @@ an already installed package.
 On OEM Android 11 builds, Recents/navigation belong to SystemUI unless
 Quickstep has been integrated as the system Recents component. Installing a
 third-party launcher alone cannot replace or repair that privileged component.
+
+
+Backup restoration preserves other databases in the application's data directory.
+A wallpaper-only restore does not reset the home layout.

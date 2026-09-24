@@ -45,6 +45,7 @@ object AppSearchProvider {
 
         // Arabic hamza/diacritic variants are considered only after native matches.
         val normalizedQuery = SearchTextNormalizer.normalize(queryTextLower)
+        if (normalizedQuery.isEmpty()) return exact
         val fallback = visibleApps.asSequence()
             .filter { it !in exact }
             .filter { SearchTextNormalizer.normalize(it.title.toString()).contains(normalizedQuery) }
@@ -60,6 +61,7 @@ object AppSearchProvider {
             .toList()
 
         val normalizedQuery = SearchTextNormalizer.normalize(queryTextLower)
+        if (normalizedQuery.isEmpty()) return emptyList()
         val direct = filteredApps.asSequence()
             .filter { SearchTextNormalizer.normalize(it.title.toString()).contains(normalizedQuery) }
             .sortedWith(compareBy(
