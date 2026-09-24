@@ -34,7 +34,6 @@
         android:fullBackupOnly="true"
         android:fullBackupContent="@xml/backupscheme"
         android:hardwareAccelerated="true"
-        android:debuggable="true"
         android:icon="@mipmap/ic_launcher_home"
         android:roundIcon="@mipmap/ic_launcher_home_round"
         android:label="@string/derived_app_name"

@@ -173,7 +173,7 @@ android {
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach {
             def channel = variant.productFlavors.last().name
-            outputFileName = "Lawnchair.${variant.versionName}.$channel.${variant.buildType.name}.apk"
+            outputFileName = "OmniLauncher.${variant.versionName}.$channel.${variant.buildType.name}${variant.buildType.name == 'release' ? '.unsigned' : ''}.apk"
         }
     }
 
@@ -248,6 +248,8 @@ android {
         }
 
         release {
+            // Owner signs the APK locally; never silently fall back to a debug keystore.
+            signingConfig = null
             resValue("string", "derived_app_name", "Omni Launcher")
             minifyEnabled true
             shrinkResources true
