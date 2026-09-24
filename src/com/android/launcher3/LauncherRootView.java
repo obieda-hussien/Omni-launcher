@@ -2,22 +2,14 @@ package com.android.launcher3;
 
 import static com.android.launcher3.config.FeatureFlags.SEPARATE_RECENTS_ACTIVITY;
 
-import android.app.WallpaperManager;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.ViewDebug;
 import android.view.WindowInsets;
 
 import com.android.launcher3.graphics.SysUiScrim;
 import com.android.launcher3.statemanager.StatefulActivity;
-import com.hoko.blur.HokoBlur;
 import com.patrykmichalik.opto.core.PreferenceExtensionsKt;
 import com.android.launcher3.util.window.WindowManagerProxy;
 
@@ -62,57 +54,9 @@ public class LauncherRootView extends InsettableFrameLayout {
         FileAccessManager fileAccessManager = FileAccessManager.getInstance(context);
         FileAccessState wallpaperAccessState = fileAccessManager.getWallpaperAccessState().getValue();
         if (pref.getEnableWallpaperBlur().get() && wallpaperAccessState != FileAccessState.Denied.INSTANCE) {
-            setUpBlur(context);
+            // Never decode the wallpaper or run OpenGL while inflating the home screen.
+            app.lawnchair.util.WallpaperBlurRenderer.schedule(this, pref.getWallpaperBlur().get());
         }
-    }
-
-    private void setUpBlur(Context context) {
-        var display = mActivity.getDeviceProfile();
-        int width = display.widthPx;
-        int height = display.heightPx;
-
-        var wallpaper = getScaledWallpaperDrawable(width, height);
-        if (wallpaper == null) {
-            return;
-        }
-
-        Bitmap originalBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(originalBitmap);
-
-        wallpaper.setBounds(0, 0, width, height);
-        wallpaper.draw(canvas);
-
-        Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
-        paint.setAlpha((int) (0.2 * 255));
-        canvas.drawRect(0, 0, width, height, paint);
-
-        Bitmap blurredBitmap = HokoBlur.with(context)
-                .forceCopy(true)
-                .scheme(HokoBlur.SCHEME_OPENGL)
-                .sampleFactor(pref.getWallpaperBlurFactorThreshold().get())
-                .radius(pref.getWallpaperBlur().get())
-                .blur(originalBitmap);
-
-        setBackground(new BitmapDrawable(getContext().getResources(), blurredBitmap));
-    }
-
-    private Drawable getScaledWallpaperDrawable(int width, int height) {
-        WallpaperManager wallpaperManager = WallpaperManager.getInstance(getContext());
-        Drawable wallpaperDrawable = wallpaperManager.getDrawable();
-
-        if (wallpaperDrawable != null) {
-            Bitmap originalBitmap = Bitmap.createBitmap(
-                    width, height, Bitmap.Config.ARGB_8888
-            );
-            Canvas canvas = new Canvas(originalBitmap);
-
-            wallpaperDrawable.setBounds(0, 0, width, height);
-            wallpaperDrawable.draw(canvas);
-
-            return new BitmapDrawable(getContext().getResources(), originalBitmap);
-        }
-        return null;
     }
 
     private void handleSystemWindowInsets(Rect insets) {

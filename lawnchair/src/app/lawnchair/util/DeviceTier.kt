@@ -17,14 +17,18 @@ class DeviceTierManager private constructor(context: Context) {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
 
         val isLowRam = activityManager?.isLowRamDevice ?: false
-        val memoryClass = activityManager?.memoryClass ?: 512
+        val memoryClass = activityManager?.memoryClass ?: 128
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager?.getMemoryInfo(memoryInfo)
+        val totalRam = memoryInfo.totalMem
+        val lowPhysicalRam = totalRam > 0L && totalRam <= 4L * 1024 * 1024 * 1024
 
         // We use 256MB as the threshold for memoryClass.
         // On modern Android (e.g., Android 11+), devices with ~2-4GB RAM typically
         // report a memoryClass of 256MB or lower. Flagships (8GB+) report 512MB+.
         val threshold = 256
 
-        tier = if (isLowRam || memoryClass <= threshold) {
+        tier = if (activityManager == null || isLowRam || lowPhysicalRam || memoryClass <= threshold) {
             DeviceTier.LOW
         } else if (memoryClass <= 512) {
             DeviceTier.MID

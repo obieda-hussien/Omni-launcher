@@ -41,6 +41,8 @@ import app.lawnchair.flowerpot.Flowerpot
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.ui.ModalBottomSheetContent
 import app.lawnchair.ui.preferences.destinations.openAppInfo
+import app.lawnchair.util.DeviceTierManager
+import app.lawnchair.util.WallpaperBlurRenderer
 import app.lawnchair.util.restartLauncher
 import app.lawnchair.util.unsafeLazy
 import app.lawnchair.views.ComposeBottomSheet
@@ -64,8 +66,22 @@ class LawnchairApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        DeviceTierManager.getInstance(this)
         QuickStepContract.sRecentsDisabled = !recentsEnabled
+        Log.i(TAG, "Quickstep enabled=$recentsEnabled sdk=${Build.VERSION.SDK_INT} compatible=$compatible")
         Flowerpot.Manager.getInstance(this)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_RUNNING_LOW) {
+            WallpaperBlurRenderer.cancelPending()
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        WallpaperBlurRenderer.cancelPending()
     }
 
     fun hideClockInStatusBar() {
