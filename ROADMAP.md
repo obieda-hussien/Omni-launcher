@@ -1,52 +1,55 @@
-# Lawnchair development roadmap
+# Omni Launcher roadmap
 
-This document outlines our high-level strategic priorities. It's a living document, not a set of
-unbreakable promises. For the status of individual tasks, see
-our [GitHub Issue Tracker](https://github.com/LawnchairLauncher/lawnchair/issues) and our
-team's [Kanban board](https://github.com/orgs/LawnchairLauncher/projects/9/views/1).
+Omni Launcher is an Apache-2.0 fork of Lawnchair 15 / Android 15 Launcher3.
+This file tracks **Omni-specific** work; upstream Lawnchair's roadmap remains
+at https://github.com/LawnchairLauncher/lawnchair.
 
-## Vision
+## P0 — Home-return performance and stability
 
-Lawnchair's goal is to be:
+- [x] Move optional wallpaper blur out of the root-view constructor and bound
+      pending jobs; provide a no-blur LOW-tier path.
+- [x] Conservative classification when device memory service is unavailable.
+- [ ] Profile game -> Home cold/warm first frame on the physical HOT 10S.
+- [ ] Analyze icon and widget population, blocking preference reads and ANRs
+      against recorded traces; patch confirmed bottlenecks in separate PRs.
+- [ ] Reproduce and isolate landscape / permanently inert Recents with logcat
+      and SystemUI / Quickstep state. No unprivileged APK can guarantee an
+      OEM SystemUI repair.
 
-* **Simple:** Match the core Pixel Launcher experience.
-* **Powerful:** Offer deep, meaningful customization.
-* **Stable:** Provide a rock-solid, reliable foundation.
+## P1 — Core experience
 
-## Roadmap
+- [x] Omni app branding and Egyptian Arabic translations (previous PRs).
+- [x] Preserve upstream copyright in the Arabic translation.
+- [ ] Full Android 11 landscape, RTL, widget/dock and accessibility audit.
+- [ ] Improve Compose settings and home UI only where that does not regress
+      the AOSP Launcher3 fast rendering path.
+- [ ] Review package identity and provide backup/migration before changing it.
 
-### Recently completed
+## P2 — OmniLink (intentionally a separate milestone)
 
-- **Shipped:** `15 Beta 1` to GitHub & Play Store.
-- **Completed:** A full architectural overhaul of the Search and Permissions systems.
+- [ ] Optional, permission-scoped client to Omni Dev Workspace.
+- [ ] Keep Home functional with Omni Dev stopped, missing or disconnected.
 
-### Current focus
+## P3 — Search, personalization and performance policies
 
-This is our active development sprint. The goal is to address key bugs and deliver a highly polished
-user experience.
+- [x] Normalize Arabic diacritics/hamza/alef variants for fuzzy app matching.
+- [ ] Improve local search and app-index caching with benchmarks.
+- [ ] Add bounded icon/bitmap cache budgets and trim-memory policies.
+- [ ] Make advanced personalization opt-in and avoid startup network traffic.
 
-- UI/UX overhaul of all Settings screens to Material 3 Expressive.
+## P4 — Build, security and release
 
-### Up next
+- [x] Remove release debug-key fallback; verify unsigned CI artifact.
+- [x] Remove hardcoded debuggable flag in base Manifest.
+- [x] Add bounded Nova backup extraction and forbid XML external entities.
+- [x] Correct required-CI final-status logic.
+- [ ] Wire and execute Lawnchair-specific JVM / instrumentation tests.
+- [ ] Build/validate release on CI; sign locally only, never commit keys.
+- [ ] Keep upstream Launcher3 / Lawnchair notices intact and periodically
+      review security changes without blindly rebasing onto 16-dev.
 
-Once the UX overhaul is stable, our focus will shift to delivering highly-requested features that
-enhance
-customization and control.
+## Gate for declaring the game/Recents bugs fixed
 
-- Proper icon swipe gestures
-- Folder "cover" mode
-- App drawer tabs
-
-### The Android 16 rebase
-
-This is the massive, foundational undertaking to migrate our codebase to the latest Android 16
-(AOSP) source. Its completion will be the foundation for our **Lawnchair 16** release.
-
-**Status:** Actively in progress, led by a core community contributor.
-
-### Long term or blocked
-
-Highly-requested features that are blocked by external dependencies or require significant research.
-
-- **Widget Stacking:** A highly complex feature requiring deep architectural investigation.
-- **QuickSwitch Stability:** An ongoing effort to mitigate upstream AOSP/OEM bugs.
+A runnable release APK, reproducible ADB logs, physical-device performance
+traces, and repeatable portrait/landscape stress results are required.
+See [diagnostics](docs/home-return-recents-diagnostics.md).
