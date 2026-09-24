@@ -30,7 +30,7 @@ jobs:
   build-debug-apk:
     strategy:
       matrix:
-        build-variant: [ assembleLawnWithQuickstepNightlyRelease, assembleLawnWithQuickstepGithubDebug, assembleLawnWithQuickstepPlayDebug ]
+        build-variant: [ assembleLawnWithQuickstepGithubRelease, assembleLawnWithQuickstepGithubDebug, assembleLawnWithQuickstepPlayDebug ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -60,6 +60,7 @@ jobs:
         with:
           name: ${{ matrix.build-variant }}
           path: build/outputs/apk/**/*.apk
+          if-no-files-found: error
 
   check-style:
     runs-on: ubuntu-latest
