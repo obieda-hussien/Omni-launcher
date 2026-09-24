@@ -23,6 +23,15 @@ class DeviceTierTest {
     }
 
     @Test
+    fun testLowTier_WhenActivityManagerIsUnavailable() {
+        val context = mock<Context>()
+        whenever(context.applicationContext).thenReturn(context)
+
+        val manager = DeviceTierManager.getInstance(context)
+        assertEquals(DeviceTier.LOW, manager.tier)
+    }
+
+    @Test
     fun testLowTier_LowRamDevice() {
         val context = mock<Context>()
         val activityManager = mock<ActivityManager>()
