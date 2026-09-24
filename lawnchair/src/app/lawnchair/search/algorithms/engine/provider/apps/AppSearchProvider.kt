@@ -18,6 +18,7 @@ object AppSearchProvider {
         val hiddenAppsInSearch = prefs.hiddenAppsInSearch.firstBlocking()
         val maxAppResults = prefs.maxAppSearchResultCount.firstBlocking()
         val enableFuzzySearch = prefs.enableFuzzySearch.firstBlocking()
+        if (maxAppResults <= 0 || query.isBlank()) return emptyList()
 
         val appResults = if (enableFuzzySearch) {
             fuzzySearch(allApps.data, query, maxAppResults, hiddenApps, hiddenAppsInSearch)
@@ -33,11 +34,23 @@ object AppSearchProvider {
         // apps that don't match all of the words in the query.
         val queryTextLower = query.lowercase(Locale.getDefault())
         val matcher = StringMatcherUtility.StringMatcher.getInstance()
-        return apps.asSequence()
-            .filter { StringMatcherUtility.matches(queryTextLower, it.title.toString(), matcher) }
+        val visibleApps = apps.asSequence()
             .filterHiddenApps(queryTextLower, hiddenApps, hiddenAppsInSearch)
+            .toList()
+        val exact = visibleApps.asSequence()
+            .filter { StringMatcherUtility.matches(queryTextLower, it.title.toString(), matcher) }
             .take(maxResultsCount)
             .toList()
+        if (exact.size == maxResultsCount) return exact
+
+        // Arabic hamza/diacritic variants are considered only after native matches.
+        val normalizedQuery = SearchTextNormalizer.normalize(queryTextLower)
+        val fallback = visibleApps.asSequence()
+            .filter { it !in exact }
+            .filter { SearchTextNormalizer.normalize(it.title.toString()).contains(normalizedQuery) }
+            .take(maxResultsCount - exact.size)
+            .toList()
+        return exact + fallback
     }
 
     private fun fuzzySearch(apps: List<AppInfo>, query: String, maxResultsCount: Int, hiddenApps: Set<String>, hiddenAppsInSearch: String): List<AppInfo> {
@@ -46,7 +59,19 @@ object AppSearchProvider {
             .filterHiddenApps(queryTextLower, hiddenApps, hiddenAppsInSearch)
             .toList()
 
-        return filteredApps
+        val normalizedQuery = SearchTextNormalizer.normalize(queryTextLower)
+        val direct = filteredApps.asSequence()
+            .filter { SearchTextNormalizer.normalize(it.title.toString()).contains(normalizedQuery) }
+            .sortedWith(compareBy(
+                { SearchTextNormalizer.normalize(it.title.toString()) != normalizedQuery },
+                { !SearchTextNormalizer.normalize(it.title.toString()).startsWith(normalizedQuery) },
+            ))
+            .take(maxResultsCount)
+            .toList()
+        if (direct.size == maxResultsCount) return direct
+
+        return direct + filteredApps.asSequence()
+            .filter { it !in direct }
             .mapNotNull { app ->
                 val matchResult = AppMatcher.match(app.title.toString(), queryTextLower)
                 if (matchResult.type == MatchType.NO_MATCH) null else Pair(app, matchResult)
@@ -58,6 +83,7 @@ object AppSearchProvider {
                 ),
             )
             .map { it.first }
-            .take(maxResultsCount)
+            .take(maxResultsCount - direct.size)
+            .toList()
     }
 }

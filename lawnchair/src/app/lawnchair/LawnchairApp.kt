@@ -21,6 +21,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
+import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -74,7 +75,7 @@ class LawnchairApp : Application() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        if (level >= TRIM_MEMORY_RUNNING_LOW) {
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
             WallpaperBlurRenderer.cancelPending()
         }
     }

@@ -582,4 +582,5 @@
     <string name="permissions_needed">الأذونات اللازمة</string>
     <string name="grant_requested_permissions_tap">انقر لمنح الأذونات</string>
     <string name="home_screen_all_views_removed_msg">خلص مسح الشاشة الرئيسية</string>
+    <string name="omni_recents_unavailable">التطبيقات الأخيرة مش متاحة من النظام دلوقتي. راجع إعدادات أزرار التنقل.</string>
 </resources>

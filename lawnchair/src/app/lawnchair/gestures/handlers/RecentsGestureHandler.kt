@@ -20,6 +20,8 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import app.lawnchair.LawnchairLauncher
 import app.lawnchair.lawnchairApp
 import app.lawnchair.views.ComposeBottomSheet
@@ -41,6 +43,10 @@ class RecentsGestureHandler(context: Context) : GestureHandler(context) {
             }
             return
         }
-        app.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
+        if (!app.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)) {
+            // SystemUI owns this action on many OEM Android builds; do not loop/restart.
+            Log.w("OmniRecents", "System rejected GLOBAL_ACTION_RECENTS; check SystemUI/Quickstep logs")
+            Toast.makeText(launcher, R.string.omni_recents_unavailable, Toast.LENGTH_LONG).show()
+        }
     }
 }
