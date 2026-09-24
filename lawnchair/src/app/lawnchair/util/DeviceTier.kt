@@ -6,7 +6,7 @@ import android.content.Context
 enum class DeviceTier {
     LOW,
     MID,
-    HIGH
+    HIGH,
 }
 
 class DeviceTierManager private constructor(context: Context) {

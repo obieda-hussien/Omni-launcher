@@ -23,9 +23,14 @@ object WallpaperBlurRenderer {
     private const val TAG = "OmniWallpaperBlur"
     private val generation = AtomicInteger()
     private val executor = ThreadPoolExecutor(
-        1, 1, 0L, TimeUnit.MILLISECONDS,
+        1,
+        1,
+        0L,
+        TimeUnit.MILLISECONDS,
         LinkedBlockingQueue(),
-    ) { command -> Thread(command, "OmniWallpaperBlur").apply { isDaemon = true } }
+    ) { command ->
+        Thread(command, "OmniWallpaperBlur").apply { isDaemon = true }
+    }
 
     @JvmStatic
     fun schedule(view: View, requestedRadius: Int) {
@@ -64,9 +69,14 @@ object WallpaperBlurRenderer {
     }
 
     private fun createSmallBlur(context: Context, requestedRadius: Int): Bitmap? {
-        val maxSide = if (DeviceTierManager.getInstance(context).tier == DeviceTier.LOW) 192 else 320
+        val maxSide = if (DeviceTierManager.getInstance(context).tier == DeviceTier.LOW) {
+            192
+        } else {
+            320
+        }
         val metrics = context.resources.displayMetrics
-        val scale = maxSide.toFloat() / max(metrics.widthPixels, metrics.heightPixels).coerceAtLeast(1)
+        val scale = maxSide.toFloat() /
+            max(metrics.widthPixels, metrics.heightPixels).coerceAtLeast(1)
         val width = max(1, (metrics.widthPixels * scale).toInt())
         val height = max(1, (metrics.heightPixels * scale).toInt())
         val drawable = WallpaperManager.getInstance(context).drawable ?: return null
@@ -83,7 +93,10 @@ object WallpaperBlurRenderer {
             val radius = (requestedRadius / 5).coerceIn(1, 6)
             for (y in 0 until height) {
                 for (x in 0 until width) {
-                    var red = 0; var green = 0; var blue = 0; var count = 0
+                    var red = 0
+                    var green = 0
+                    var blue = 0
+                    var count = 0
                     for (dx in -radius..radius) {
                         val xx = (x + dx).coerceIn(0, width - 1)
                         val pixel = source[y * width + xx]
@@ -97,7 +110,10 @@ object WallpaperBlurRenderer {
             }
             for (y in 0 until height) {
                 for (x in 0 until width) {
-                    var red = 0; var green = 0; var blue = 0; var count = 0
+                    var red = 0
+                    var green = 0
+                    var blue = 0
+                    var count = 0
                     for (dy in -radius..radius) {
                         val yy = (y + dy).coerceIn(0, height - 1)
                         val pixel = horizontal[yy * width + x]

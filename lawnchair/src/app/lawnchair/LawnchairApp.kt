@@ -19,9 +19,9 @@ package app.lawnchair
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.ComponentName
 import android.content.Context
-import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.net.Uri
 import android.os.Build

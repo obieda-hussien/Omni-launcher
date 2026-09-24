@@ -64,10 +64,12 @@ object AppSearchProvider {
         if (normalizedQuery.isEmpty()) return emptyList()
         val direct = filteredApps.asSequence()
             .filter { SearchTextNormalizer.normalize(it.title.toString()).contains(normalizedQuery) }
-            .sortedWith(compareBy(
-                { SearchTextNormalizer.normalize(it.title.toString()) != normalizedQuery },
-                { !SearchTextNormalizer.normalize(it.title.toString()).startsWith(normalizedQuery) },
-            ))
+            .sortedWith(
+                compareBy(
+                    { SearchTextNormalizer.normalize(it.title.toString()) != normalizedQuery },
+                    { !SearchTextNormalizer.normalize(it.title.toString()).startsWith(normalizedQuery) },
+                ),
+            )
             .take(maxResultsCount)
             .toList()
         if (direct.size == maxResultsCount) return direct
