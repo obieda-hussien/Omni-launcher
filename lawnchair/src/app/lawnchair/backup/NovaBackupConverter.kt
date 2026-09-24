@@ -41,6 +41,9 @@ class NovaBackupConverter(
         private const val TAG = "NovaBackupConverter"
         private const val NOVA_XML = "nova.xml"
         private const val NOVA_DB = "nova.db"
+        private const val MAX_NOVA_XML_BYTES = 4L * 1024 * 1024
+        private const val MAX_NOVA_DB_BYTES = 128L * 1024 * 1024
+        private const val MAX_ZIP_ENTRIES = 1024
         private const val NOVA_CONTAINER_DESKTOP = -100
         private const val NOVA_CONTAINER_HOTSEAT = -101
         private const val FOLDER_PAGE_RANK_OFFSET = 1_000
@@ -213,7 +216,14 @@ class NovaBackupConverter(
     }
 
     private fun parseNovaConfig(xmlFile: File): NovaConfig {
-        val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile)
+        // Backups are untrusted input. Reject DTDs and external entity resolution.
+        val factory = DocumentBuilderFactory.newInstance().apply {
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            isExpandEntityReferences = false
+        }
+        val doc = factory.newDocumentBuilder().parse(xmlFile)
         val root = doc.documentElement
         var columns: Int? = null
         var rows: Int? = null
@@ -470,15 +480,30 @@ class NovaBackupConverter(
             FileInputStream(it.fileDescriptor).use { fis ->
                 ZipInputStream(fis).use { zis ->
                     var entry = zis.nextEntry
+                    var entryCount = 0
                     while (entry != null) {
+                        require(++entryCount <= MAX_ZIP_ENTRIES) { "Backup contains too many entries" }
                         if (!entry.isDirectory && entry.name in fileNames) {
+                            val maxBytes = if (entry.name == NOVA_XML) MAX_NOVA_XML_BYTES else MAX_NOVA_DB_BYTES
+                            require(entry.size < 0 || entry.size <= maxBytes) { "Backup entry too large" }
                             val outFile = File(destDir, entry.name)
                             require(outFile.canonicalPath.startsWith(destCanonical + File.separator)) {
                                 "Zip entry outside target dir: ${entry.name}"
                             }
                             outFile.parentFile?.mkdirs()
-                            FileOutputStream(outFile).use { fos -> zis.copyTo(fos) }
+                            FileOutputStream(outFile).use { fos ->
+                                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                                var bytesWritten = 0L
+                                while (true) {
+                                    val read = zis.read(buffer)
+                                    if (read == -1) break
+                                    bytesWritten += read
+                                    require(bytesWritten <= maxBytes) { "Backup entry exceeds size limit" }
+                                    fos.write(buffer, 0, read)
+                                }
+                            }
                         }
+                        zis.closeEntry()
                         entry = zis.nextEntry
                     }
                 }
