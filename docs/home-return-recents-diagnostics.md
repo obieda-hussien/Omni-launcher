@@ -60,6 +60,9 @@ failure reliably; emulator success is not device evidence.
   from `LauncherRootView` construction.
 - Uses a bounded one-worker queue and rejects stale view results.
 - Uses a conservative LOW-tier fallback and a no-blur LOW path.
+- Serializes Overview command queue access on main and clears a >10s stalled
+  queue only when a subsequent Overview command arrives. This is a local
+  Quickstep recovery, not a SystemUI restart or guaranteed OEM navigation fix.
 - Produces unsigned GitHub release artifacts for local signing.
 - Does **not** claim to repair OEM SystemUI, a broken navigation-button
   binding, or root/QuickSwitch compatibility. Those require device traces.
