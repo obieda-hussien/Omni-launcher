@@ -173,7 +173,7 @@ android {
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach {
             def channel = variant.productFlavors.last().name
-            outputFileName = "Lawnchair.${variant.versionName}.$channel.${variant.buildType.name}.apk"
+            outputFileName = "OmniLauncher.${variant.versionName}.$channel.${variant.buildType.name}${variant.buildType.name == 'release' ? '.unsigned' : ''}.apk"
         }
     }
 
@@ -212,42 +212,20 @@ android {
         .findAll { it.exists() }
         .toArray()
 
-    def releaseSigning
-    try {
-        def keystoreProperties = new Properties()
-        keystoreProperties.load(rootProject.file("keystore.properties").newInputStream())
-        releaseSigning = signingConfigs.create("release") {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile rootProject.file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-        }
-    } catch (Exception ignored) {
-        releaseSigning = signingConfigs.debug
-    }
-
     buildTypes {
         all {
-            signingConfig releaseSigning
-
-            applicationVariants.configureEach { variant ->
-                variant.outputs.configureEach {
-                    def channel = variant.productFlavors.last().name
-                    // Override signingConfig to debug if the "nightly" flavor is selected
-                    if (channel.any { it == "nightly" }) {
-                        signingConfig = signingConfigs.debug
-                    }
-                }
-            }
             pseudoLocalesEnabled true
         }
 
         debug {
+            signingConfig signingConfigs.debug
             applicationIdSuffix ".debug"
             resValue("string", "derived_app_name", "Omni Launcher (Debug)")
         }
 
         release {
+            // Owner signs the APK locally; never silently fall back to a debug keystore.
+            signingConfig = null
             resValue("string", "derived_app_name", "Omni Launcher")
             minifyEnabled true
             shrinkResources true

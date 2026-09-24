@@ -45,12 +45,19 @@ class StartupBenchmarks {
     fun startupCompilationBaselineProfiles() =
         benchmark(CompilationMode.Partial(BaselineProfileMode.Require))
 
-    private fun benchmark(compilationMode: CompilationMode) {
+    @Test
+    fun warmStartupWithBaselineProfiles() =
+        benchmark(CompilationMode.Partial(BaselineProfileMode.Require), StartupMode.WARM)
+
+    private fun benchmark(
+        compilationMode: CompilationMode,
+        startupMode: StartupMode = StartupMode.COLD,
+    ) {
         rule.measureRepeated(
             packageName = Constants.PACKAGE_NAME,
             metrics = listOf(StartupTimingMetric()),
             compilationMode = compilationMode,
-            startupMode = StartupMode.COLD,
+            startupMode = startupMode,
             iterations = 10,
             setupBlock = {
                 pressHome()

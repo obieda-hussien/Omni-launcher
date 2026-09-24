@@ -66,7 +66,7 @@ class LawnchairBackup(
                     {
                         val file = entry.value
                         file.parentFile?.mkdirs()
-                        it.copyTo(file.outputStream())
+                        file.outputStream().use { output -> it.copyTo(output) }
                     }
                 },
             )
@@ -77,17 +77,27 @@ class LawnchairBackup(
                 wallpaperManager.setBitmap(BitmapFactory.decodeStream(it))
             }
         }
-        context.getDatabasePath(LAUNCHER_DB_FILE_NAME).parentFile?.deleteRecursively()
-        DeviceGridState(info.gridState).writeToPrefs(context, true)
+        // Do NOT delete the entire databases directory: it also holds Room and prefs DBs.
+        // A wallpaper-only restore must never destroy the existing home layout.
+        if (contents.hasFlag(INCLUDE_LAYOUT_AND_SETTINGS)) {
+            var archiveContainsLayout = false
+            readZip(mapOf(LAUNCHER_DB_FILE_NAME to { archiveContainsLayout = true }))
+            require(archiveContainsLayout) { "Backup has no launcher database" }
+            context.getDatabasePath(RESTORED_DB_FILE_NAME).delete()
+        }
         readZip(handlers)
 
-        var dbController = ModelDbController(context)
-        RestoreDbTask.performRestore(context, dbController)
+        if (contents.hasFlag(INCLUDE_LAYOUT_AND_SETTINGS)) {
+            DeviceGridState(info.gridState).writeToPrefs(context, true)
+            val dbController = ModelDbController(context)
+            RestoreDbTask.performRestore(context, dbController)
+        }
     }
 
     private suspend fun readZip(handlers: Map<String, suspend (InputStream) -> Unit>) {
         withContext(Dispatchers.IO) {
-            val pfd = context.contentResolver.openFileDescriptor(uri, "r")!!
+            val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+                ?: throw IllegalStateException("Backup file could not be opened")
             pfd.use {
                 FileInputStream(it.fileDescriptor).use { inStream ->
                     ZipInputStream(inStream).use { zipIs ->
@@ -127,7 +137,7 @@ class LawnchairBackup(
         )
 
         fun generateBackupFileName(): String {
-            val fileName = "Lawnchair_Backup ${SimpleDateFormat.getDateTimeInstance().format(Date())}"
+            val fileName = "OmniLauncher_Backup ${SimpleDateFormat.getDateTimeInstance().format(Date())}"
             return "$fileName.lawnchairbackup"
         }
 
@@ -178,10 +188,12 @@ class LawnchairBackup(
                             screenshotBitmap.compress(Bitmap.CompressFormat.PNG, 85, out)
                         }
 
-                        getFiles(context, forRestore = false).entries.forEach {
-                            if (!it.value.exists()) return@forEach
-                            out.putNextEntry(ZipEntry(it.key))
-                            it.value.inputStream().copyTo(out)
+                        if (contents.hasFlag(INCLUDE_LAYOUT_AND_SETTINGS)) {
+                            getFiles(context, forRestore = false).entries.forEach {
+                                if (!it.value.exists()) return@forEach
+                                out.putNextEntry(ZipEntry(it.key))
+                                it.value.inputStream().use { input -> input.copyTo(out) }
+                            }
                         }
                     }
                 }

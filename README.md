@@ -23,3 +23,39 @@ Lawnchair is a free, open-source home app for Android. Omni Launcher is a fork o
 Modifications and specific Omni Launcher features are provided under the same Apache 2.0 license.
 
 See [LICENSE.txt](LICENSE.txt) for the full license text.
+
+
+## Omni development / local signing
+
+The `15-dev` branch is derived from Lawnchair 15. Android framework/Launcher3
+internals intentionally retain their original namespaces and copyright headers.
+The GitHub release variant is **unsigned**; install only after signing locally
+with your own stable key. Debug variants use the standard Android debug key.
+Unsigned builds must not be announced as installable updates.
+
+Build on a Java 21/Android SDK-enabled host:
+
+```sh
+./gradlew assembleLawnWithQuickstepGithubRelease
+```
+
+The APK is under `build/outputs/apk/` with `.unsigned.apk` in its name.
+Backing up launcher data before signing under a different application ID or
+certificate is recommended; signing with a different certificate cannot update
+an already installed package.
+
+On OEM Android 11 builds, Recents/navigation belong to SystemUI unless
+Quickstep has been integrated as the system Recents component. Installing a
+third-party launcher alone cannot replace or repair that privileged component.
+
+
+Backup restoration preserves other databases in the application's data directory.
+A wallpaper-only restore does not reset the home layout.
+
+
+## Game-return and Recents diagnostics
+
+See [Home and Recents diagnostics](docs/home-return-recents-diagnostics.md) for a
+physical-device reproduction matrix, logcat commands and limitations of
+unprivileged OEM Android 11 SystemUI/Quickstep integrations. CI builds alone
+do not establish that the hardware Recents button has been repaired.

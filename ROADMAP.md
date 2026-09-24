@@ -1,52 +1,29 @@
-# Lawnchair development roadmap
+# Omni Launcher roadmap
 
-This document outlines our high-level strategic priorities. It's a living document, not a set of
-unbreakable promises. For the status of individual tasks, see
-our [GitHub Issue Tracker](https://github.com/LawnchairLauncher/lawnchair/issues) and our
-team's [Kanban board](https://github.com/orgs/LawnchairLauncher/projects/9/views/1).
+Base: Lawnchair 15 / Android Launcher3. All inherited AOSP and Lawnchair notices
+remain applicable. This plan supersedes the inherited Lawnchair product roadmap
+for the Omni fork; it does not represent promises by the upstream project.
 
-## Vision
+## P0 — launcher reliability
+- Keep wallpaper decode, blur and heavy I/O out of launch/return-to-home.
+- Bound image jobs and respond to memory pressure.
+- Measure cold start, warm return from heavy games, rotation and process death on
+  Infinix HOT 10S (Android 11, 4 GB RAM) before claiming performance wins.
+- Diagnose Recents separately from the launcher: OEM SystemUI owns the hardware
+  navigation button unless Quickstep is installed as the privileged Recents component.
 
-Lawnchair's goal is to be:
+## P1 — coherent Omni UX
+- Unify visible application name, Arabic translations, onboarding and accessibility.
+- Preserve Launcher3 hot paths instead of performing an all-at-once Java/Compose rewrite.
 
-* **Simple:** Match the core Pixel Launcher experience.
-* **Powerful:** Offer deep, meaningful customization.
-* **Stable:** Provide a rock-solid, reliable foundation.
+## P3 — offline intelligence
+- Prioritize local app search and robust Arabic spelling normalization.
+- Add optional suggestions only with explicit user choice; never block home startup
+  on internet, a local LLM or the Omni Dev app.
 
-## Roadmap
+## P4 — maintenance
+- CI provides unsigned release artifacts only; signing remains local.
+- Preserve base attribution, test execution visibility, and independently verify
+  OEM navigation behavior rather than treating an APK build as a device test.
 
-### Recently completed
-
-- **Shipped:** `15 Beta 1` to GitHub & Play Store.
-- **Completed:** A full architectural overhaul of the Search and Permissions systems.
-
-### Current focus
-
-This is our active development sprint. The goal is to address key bugs and deliver a highly polished
-user experience.
-
-- UI/UX overhaul of all Settings screens to Material 3 Expressive.
-
-### Up next
-
-Once the UX overhaul is stable, our focus will shift to delivering highly-requested features that
-enhance
-customization and control.
-
-- Proper icon swipe gestures
-- Folder "cover" mode
-- App drawer tabs
-
-### The Android 16 rebase
-
-This is the massive, foundational undertaking to migrate our codebase to the latest Android 16
-(AOSP) source. Its completion will be the foundation for our **Lawnchair 16** release.
-
-**Status:** Actively in progress, led by a core community contributor.
-
-### Long term or blocked
-
-Highly-requested features that are blocked by external dependencies or require significant research.
-
-- **Widget Stacking:** A highly complex feature requiring deep architectural investigation.
-- **QuickSwitch Stability:** An ongoing effort to mitigate upstream AOSP/OEM bugs.
+See [recovery guide](docs/omni-recovery.md) for reproducible Recents and game-return diagnostics.

@@ -73,6 +73,7 @@ public class OverviewCommandHelper {
      * Size of 2 should be enough. We'll toss in one more because we're kind hearted.
      */
     private final static int MAX_QUEUE_SIZE = 3;
+    private static final long STALE_COMMAND_TIMEOUT_MS = 10_000L;
 
     private static final String TRANSITION_NAME = "Transition:toOverview";
 
@@ -87,14 +88,6 @@ public class OverviewCommandHelper {
      * {@link OverviewCommandHelper#executeCommand(CommandInfo)} for the same command
      */
     private int mKeyboardTaskFocusIndex = -1;
-
-    /**
-     * Whether we should incoming toggle commands while a previous toggle command is still ongoing.
-     * This serves as a rate-limiter to prevent overlapping animations that can clobber each other
-     * and prevent clean-up callbacks from running. This thus prevents a recurring set of bugs with
-     * janky recents animations and unresponsive home and overview buttons.
-     */
-    private boolean mWaitForToggleCommandComplete = false;
 
     public OverviewCommandHelper(TouchInteractionService service,
             OverviewComponentObserver observer,
@@ -145,6 +138,19 @@ public class OverviewCommandHelper {
 
     @UiThread
     private void addCommand(CommandInfo cmd) {
+        // Access the queue only on the UI thread. Binder callbacks may be concurrent.
+        if (!mPendingCommands.isEmpty()) {
+            CommandInfo oldest = mPendingCommands.get(0);
+            if (SystemClock.elapsedRealtime() - oldest.createTime > STALE_COMMAND_TIMEOUT_MS
+                    && !mTaskAnimationManager.isRecentsAnimationRunning()) {
+                Log.w(TAG, "Discarding stale overview command after missed completion: " + oldest);
+                mPendingCommands.clear();
+            }
+        }
+        if (mPendingCommands.size() >= MAX_QUEUE_SIZE) {
+            Log.w(TAG, "Overview command queue full; ignoring command type " + cmd.type);
+            return;
+        }
         boolean wasEmpty = mPendingCommands.isEmpty();
         mPendingCommands.add(cmd);
         if (wasEmpty) {
@@ -159,14 +165,9 @@ public class OverviewCommandHelper {
      */
     @BinderThread
     public void addCommand(int type) {
-        if (mPendingCommands.size() >= MAX_QUEUE_SIZE) {
-            Log.d(TAG, "the pending command queue is full (" + mPendingCommands.size() + "). "
-                    + "command not added: " + type);
-            return;
-        }
         Log.d(TAG, "adding command type: " + type);
-        CommandInfo cmd = new CommandInfo(type);
-        MAIN_EXECUTOR.execute(() -> addCommand(cmd));
+        // Queue capacity/recovery must be checked on the same thread as mutations.
+        MAIN_EXECUTOR.execute(() -> addCommand(new CommandInfo(type)));
     }
 
     @UiThread
@@ -195,7 +196,6 @@ public class OverviewCommandHelper {
     private boolean launchTask(RecentsView recents, @Nullable TaskView taskView, CommandInfo cmd) {
         RunnableList callbackList = null;
         if (taskView != null) {
-            mWaitForToggleCommandComplete = true;
             taskView.setEndQuickSwitchCuj(true);
             callbackList = taskView.launchTasks();
         }
@@ -204,13 +204,11 @@ public class OverviewCommandHelper {
             callbackList.add(() -> {
                 Log.d(TAG, "launching task callback: " + cmd);
                 scheduleNextTask(cmd);
-                mWaitForToggleCommandComplete = false;
             });
             Log.d(TAG, "launching task - waiting for callback: " + cmd);
             return false;
         } else {
             recents.startHome();
-            mWaitForToggleCommandComplete = false;
             return true;
         }
     }
@@ -221,11 +219,6 @@ public class OverviewCommandHelper {
      */
     private <T extends StatefulActivity<?> & RecentsViewContainer> boolean executeCommand(
             CommandInfo cmd) {
-        if (mWaitForToggleCommandComplete && cmd.type == TYPE_TOGGLE) {
-            Log.d(TAG, "executeCommand: " + cmd
-                    + " - waiting for toggle command complete");
-            return true;
-        }
         BaseActivityInterface<?, T> activityInterface =
                 mOverviewComponentObserver.getActivityInterface();
 
@@ -494,7 +487,6 @@ public class OverviewCommandHelper {
             pw.println("    pendingCommandType=" + mPendingCommands.get(0).type);
         }
         pw.println("  mKeyboardTaskFocusIndex=" + mKeyboardTaskFocusIndex);
-        pw.println("  mWaitForToggleCommandComplete=" + mWaitForToggleCommandComplete);
     }
 
     private static class CommandInfo {

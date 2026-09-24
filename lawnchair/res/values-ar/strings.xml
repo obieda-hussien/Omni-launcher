@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2021, اومني لانشر
+  ~ Copyright 2021, Lawnchair
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -582,4 +582,9 @@
     <string name="permissions_needed">الأذونات اللازمة</string>
     <string name="grant_requested_permissions_tap">انقر لمنح الأذونات</string>
     <string name="home_screen_all_views_removed_msg">خلص مسح الشاشة الرئيسية</string>
+    <string name="omni_recents_unavailable">التطبيقات الأخيرة مش متاحة من النظام دلوقتي. راجع إعدادات أزرار التنقل.</string>
+    <string name="omni_performance_heading">أداء الشاشة الرئيسية</string>
+    <string name="omni_performance_summary">تصنيف إمكانيات الجهاز: %1$s. التأثيرات الاختيارية مش هتعطل فتح الشاشة.</string>
+    <string name="omni_wallpaper_blur">تمويه خفيف للخلفية</string>
+    <string name="omni_wallpaper_blur_description">تأثير اختياري بجودة اقتصادية. مقفول افتراضيًا عشان الرجوع من الألعاب يبقى أسرع.</string>
 </resources>

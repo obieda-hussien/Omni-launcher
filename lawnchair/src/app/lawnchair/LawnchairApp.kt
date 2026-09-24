@@ -19,6 +19,7 @@ package app.lawnchair
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -37,10 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import app.lawnchair.backup.LawnchairBackup
-import app.lawnchair.flowerpot.Flowerpot
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.ui.ModalBottomSheetContent
 import app.lawnchair.ui.preferences.destinations.openAppInfo
+import app.lawnchair.util.DeviceTierManager
+import app.lawnchair.util.WallpaperBlurRenderer
 import app.lawnchair.util.restartLauncher
 import app.lawnchair.util.unsafeLazy
 import app.lawnchair.views.ComposeBottomSheet
@@ -64,8 +66,22 @@ class LawnchairApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        DeviceTierManager.getInstance(this)
         QuickStepContract.sRecentsDisabled = !recentsEnabled
-        Flowerpot.Manager.getInstance(this)
+        Log.i(TAG, "Quickstep enabled=$recentsEnabled sdk=${Build.VERSION.SDK_INT} compatible=$compatible")
+        // Categorization assets load on first use, not during the Home cold-start path.
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+            WallpaperBlurRenderer.cancelPending()
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        WallpaperBlurRenderer.cancelPending()
     }
 
     fun hideClockInStatusBar() {

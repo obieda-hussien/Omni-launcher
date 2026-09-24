@@ -27,6 +27,7 @@ import java.io.FileOutputStream
 import java.net.URISyntaxException
 import java.util.UUID
 import java.util.zip.ZipInputStream
+import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -213,7 +214,17 @@ class NovaBackupConverter(
     }
 
     private fun parseNovaConfig(xmlFile: File): NovaConfig {
-        val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile)
+        // Backup files are untrusted. Fail closed if the parser cannot prohibit DTDs.
+        val factory = DocumentBuilderFactory.newInstance().apply {
+            setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+            setXIncludeAware(false)
+            isExpandEntityReferences = false
+        }
+        val doc = factory.newDocumentBuilder().parse(xmlFile)
         val root = doc.documentElement
         var columns: Int? = null
         var rows: Int? = null
@@ -466,18 +477,35 @@ class NovaBackupConverter(
         val pfd = context.contentResolver.openFileDescriptor(uri, "r")
             ?: throw IllegalStateException("Unable to open backup URI")
         val destCanonical = destDir.canonicalPath
+        var totalExtracted = 0L
+        var entryCount = 0
         pfd.use {
             FileInputStream(it.fileDescriptor).use { fis ->
                 ZipInputStream(fis).use { zis ->
                     var entry = zis.nextEntry
                     while (entry != null) {
+                        entryCount++
+                        require(entryCount <= 128) { "Backup has too many entries" }
                         if (!entry.isDirectory && entry.name in fileNames) {
                             val outFile = File(destDir, entry.name)
                             require(outFile.canonicalPath.startsWith(destCanonical + File.separator)) {
                                 "Zip entry outside target dir: ${entry.name}"
                             }
                             outFile.parentFile?.mkdirs()
-                            FileOutputStream(outFile).use { fos -> zis.copyTo(fos) }
+                            FileOutputStream(outFile).use { fos ->
+                                val buffer = ByteArray(8192)
+                                var fileSize = 0L
+                                while (true) {
+                                    val read = zis.read(buffer)
+                                    if (read < 0) break
+                                    fileSize += read
+                                    totalExtracted += read
+                                    require(fileSize <= 64L * 1024 * 1024 && totalExtracted <= 96L * 1024 * 1024) {
+                                        "Backup exceeds safe extraction limits"
+                                    }
+                                    fos.write(buffer, 0, read)
+                                }
+                            }
                         }
                         entry = zis.nextEntry
                     }
