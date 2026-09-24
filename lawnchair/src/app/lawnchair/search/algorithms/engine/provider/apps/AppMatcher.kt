@@ -1,5 +1,6 @@
 package app.lawnchair.search.algorithms.engine.provider.apps
 
+import java.text.Normalizer
 import java.util.Locale
 import me.xdrop.fuzzywuzzy.FuzzySearch
 
@@ -37,28 +38,41 @@ internal enum class MatchType(val priority: Int) {
  */
 internal object AppMatcher {
     private const val FUZZY_SCORE_CUTOFF = 65
+    private val arabicMarks = Regex("[\\u064B-\\u065F\\u0670\\u0640]")
+
+    // Normalize each label and query once, not once per matching rule.
+    private fun normalize(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFKC)
+        .lowercase(Locale.ROOT)
+        .replace(arabicMarks, "")
+        .replace('أ', 'ا')
+        .replace('إ', 'ا')
+        .replace('آ', 'ا')
+        .replace('ى', 'ي')
+        .trim()
 
     fun match(appName: String, query: String): MatchResult {
-        val app = appName.lowercase(Locale.getDefault())
+        val app = normalize(appName)
+        val normalizedQuery = normalize(query)
+        if (app.isEmpty() || normalizedQuery.isEmpty()) return MatchResult(0f, MatchType.NO_MATCH)
 
         // Rule 0: Exact Match
-        if (app == query) return MatchResult(1.0f, MatchType.EXACT_MATCH)
+        if (app == normalizedQuery) return MatchResult(1.0f, MatchType.EXACT_MATCH)
 
         // Rule 1: Direct Prefix
-        if (app.startsWith(query)) {
-            val ratio = query.length.toFloat() / app.length
+        if (app.startsWith(normalizedQuery)) {
+            val ratio = normalizedQuery.length.toFloat() / app.length
             val score = (0.9f + 0.05f * ratio).coerceAtMost(0.95f)
             return MatchResult(score, MatchType.DIRECT_PREFIX)
         }
 
         // Tokenize once and reuse
         val tokens = app.split(Regex("\\s+")).filter { it.isNotBlank() }
-        val qTokens = query.split(Regex("\\s+")).filter { it.isNotBlank() }
+        val qTokens = normalizedQuery.split(Regex("\\s+")).filter { it.isNotBlank() }
 
         // Rule 2: Initials (for single-token queries)
-        if (query.none { it.isWhitespace() }) {
+        if (normalizedQuery.none { it.isWhitespace() }) {
             val initials = tokens.joinToString("") { it.first().toString() }
-            if (initials.isNotEmpty() && initials.startsWith(query)) {
+            if (initials.isNotEmpty() && initials.startsWith(normalizedQuery)) {
                 return MatchResult(0.88f, MatchType.INITIALS)
             }
         }
@@ -71,7 +85,7 @@ internal object AppMatcher {
         }
 
         // Rule 4: Substring
-        if (app.contains(query)) return MatchResult(0.72f, MatchType.SUBSTRING)
+        if (app.contains(normalizedQuery)) return MatchResult(0.72f, MatchType.SUBSTRING)
 
         // Rule 5: All Tokens Present (Order-agnostic)
         if (qTokens.isNotEmpty() && qTokens.all { qTok -> tokens.any { it.startsWith(qTok) } }) {
@@ -79,9 +93,9 @@ internal object AppMatcher {
         }
 
         // Rule 6: Fuzzy Search
-        val fuzzyWhole = FuzzySearch.ratio(app, query)
+        val fuzzyWhole = FuzzySearch.ratio(app, normalizedQuery)
         // Avoid re-calculating max if no tokens exist
-        val fuzzyToken = if (tokens.isEmpty()) 0 else tokens.maxOfOrNull { FuzzySearch.ratio(it, query) } ?: 0
+        val fuzzyToken = if (tokens.isEmpty()) 0 else tokens.maxOfOrNull { FuzzySearch.ratio(it, normalizedQuery) } ?: 0
         val fuzzyScore = maxOf(fuzzyWhole, fuzzyToken)
 
         if (fuzzyScore >= FUZZY_SCORE_CUTOFF) {
