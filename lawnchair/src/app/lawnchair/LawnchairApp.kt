@@ -38,7 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import app.lawnchair.backup.LawnchairBackup
-import app.lawnchair.flowerpot.Flowerpot
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.ui.ModalBottomSheetContent
 import app.lawnchair.ui.preferences.destinations.openAppInfo
@@ -70,7 +69,7 @@ class LawnchairApp : Application() {
         DeviceTierManager.getInstance(this)
         QuickStepContract.sRecentsDisabled = !recentsEnabled
         Log.i(TAG, "Quickstep enabled=$recentsEnabled sdk=${Build.VERSION.SDK_INT} compatible=$compatible")
-        Flowerpot.Manager.getInstance(this)
+        // Categorization assets load on first use, not during the Home cold-start path.
     }
 
     override fun onTrimMemory(level: Int) {

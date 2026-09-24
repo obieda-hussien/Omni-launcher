@@ -51,6 +51,7 @@ import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.preferences2.PreferenceManager2;
 import app.lawnchair.theme.drawable.DrawableTokens;
 
+import com.android.launcher3.util.Executors;
 import com.android.launcher3.util.HorizontalInsettableView;
 import com.android.launcher3.util.MultiTranslateDelegate;
 import com.android.launcher3.views.ActivityContext;
@@ -99,7 +100,8 @@ public class Hotseat extends CellLayout implements Insettable {
             // The current hotseat mode is not available,
             // setting the hotseat mode to one that is always available
             hotseatMode = LawnchairHotseat.INSTANCE;
-            PreferenceExtensionsKt.setBlocking(preferenceManager2.getHotseatMode(), hotseatMode);
+            Executors.MODEL_EXECUTOR.execute(() ->
+                    PreferenceExtensionsKt.setBlocking(preferenceManager2.getHotseatMode(), LawnchairHotseat.INSTANCE));
         }
         int layoutId = hotseatMode.getLayoutResourceId();
 
