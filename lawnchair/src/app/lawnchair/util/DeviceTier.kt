@@ -17,7 +17,8 @@ class DeviceTierManager private constructor(context: Context) {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
 
         val isLowRam = activityManager?.isLowRamDevice ?: false
-        val memoryClass = activityManager?.memoryClass ?: 512
+        // Unknown hardware must fall back to the conservative (LOW) resource policy.
+        val memoryClass = activityManager?.memoryClass ?: 0
 
         // We use 256MB as the threshold for memoryClass.
         // On modern Android (e.g., Android 11+), devices with ~2-4GB RAM typically
