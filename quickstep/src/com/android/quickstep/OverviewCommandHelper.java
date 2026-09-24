@@ -74,6 +74,9 @@ public class OverviewCommandHelper {
      */
     private final static int MAX_QUEUE_SIZE = 3;
 
+    // A lost OEM/Recents animation callback must not make future button presses inert forever.
+    private static final long STALLED_COMMAND_TIMEOUT_MS = 10_000L;
+
     private static final String TRANSITION_NAME = "Transition:toOverview";
 
     private final TouchInteractionService mService;
@@ -159,14 +162,34 @@ public class OverviewCommandHelper {
      */
     @BinderThread
     public void addCommand(int type) {
-        if (mPendingCommands.size() >= MAX_QUEUE_SIZE) {
-            Log.d(TAG, "the pending command queue is full (" + mPendingCommands.size() + "). "
-                    + "command not added: " + type);
-            return;
-        }
-        Log.d(TAG, "adding command type: " + type);
+        // Queue reads and writes must be serialized on main; the Binder thread must not
+        // access ArrayList while animation callbacks are removing commands.
         CommandInfo cmd = new CommandInfo(type);
-        MAIN_EXECUTOR.execute(() -> addCommand(cmd));
+        MAIN_EXECUTOR.execute(() -> {
+            recoverStalledCommandIfNeeded();
+            if (mPendingCommands.size() >= MAX_QUEUE_SIZE) {
+                Log.w(TAG, "pending overview command queue full; dropping type=" + type);
+                return;
+            }
+            Log.d(TAG, "adding command type: " + type);
+            addCommand(cmd);
+        });
+    }
+
+    @UiThread
+    private void recoverStalledCommandIfNeeded() {
+        if (mPendingCommands.isEmpty()) return;
+        CommandInfo pending = mPendingCommands.get(0);
+        long ageMs = SystemClock.elapsedRealtime() - pending.createTime;
+        if (ageMs < STALLED_COMMAND_TIMEOUT_MS) return;
+
+        Log.w(TAG, "recovering stale overview command type=" + pending.type
+                + ", ageMs=" + ageMs + ", queued=" + mPendingCommands.size());
+        // Do not force-stop SystemUI or kill a task. Only reset this helper's own
+        // bookkeeping; late animation callbacks will be ignored by scheduleNextTask.
+        mPendingCommands.clear();
+        mWaitForToggleCommandComplete = false;
+        mKeyboardTaskFocusIndex = INVALID_PAGE;
     }
 
     @UiThread
