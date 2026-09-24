@@ -28,6 +28,7 @@ import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.preferences2.asState
 import app.lawnchair.preferences2.preferenceManager2
+import app.lawnchair.util.DeviceTierManager
 import app.lawnchair.theme.color.ColorOption
 import app.lawnchair.theme.color.ColorStyle
 import app.lawnchair.ui.preferences.LocalIsExpandedScreen
@@ -59,6 +60,7 @@ fun GeneralPreferences() {
     val context = LocalContext.current
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
+    val deviceTier = remember(context) { DeviceTierManager.getInstance(context).tier }
     val iconPacks by LocalPreferenceInteractor.current.iconPacks.collectAsStateWithLifecycle()
     val themedIconsAdapter = prefs.themedIcons.getAdapter()
     val drawerThemedIconsAdapter = prefs.drawerThemedIcons.getAdapter()
@@ -94,6 +96,16 @@ fun GeneralPreferences() {
                 adapter = prefs.allowRotation.getAdapter(),
                 label = stringResource(id = R.string.home_screen_rotation_label),
                 description = stringResource(id = R.string.home_screen_rotation_description),
+            )
+        }
+        PreferenceGroup(
+            heading = stringResource(id = R.string.omni_performance_heading),
+            description = stringResource(id = R.string.omni_performance_summary, deviceTier.name),
+        ) {
+            SwitchPreference(
+                adapter = prefs.enableWallpaperBlur.getAdapter(),
+                label = stringResource(id = R.string.omni_wallpaper_blur),
+                description = stringResource(id = R.string.omni_wallpaper_blur_description),
             )
         }
         ExpandAndShrink(visible = prefs2.enableFontSelection.asState().value) {

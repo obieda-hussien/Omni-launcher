@@ -922,4 +922,8 @@
     <!-- Message shown when all home screen views are removed -->
     <string name="home_screen_all_views_removed_msg">Home screen cleared</string>
     <string name="omni_recents_unavailable">Recent apps are unavailable in SystemUI. Check your navigation settings.</string>
+    <string name="omni_performance_heading">Home performance</string>
+    <string name="omni_performance_summary">Automatic hardware tier: %1$s. Optional effects never block Home.</string>
+    <string name="omni_wallpaper_blur">Soft wallpaper blur</string>
+    <string name="omni_wallpaper_blur_description">Optional, low-resolution background effect. Off by default for fast game-to-home recovery.</string>
 </resources>
