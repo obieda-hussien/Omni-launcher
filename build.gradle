@@ -287,7 +287,13 @@ android {
         }
 
         lawn {
-            java.srcDirs = ['src_flags', 'src_shortcuts_overrides', 'lawnchair/src', 'tests/shared']
+            // AGP/KGP feed these roots directly to variant compilation. Do not use lawnchair/src:
+            // it also contains test/kotlin, and source-set excludes do not filter that compiler path.
+            java.srcDirs = [
+                'src_flags', 'src_shortcuts_overrides',
+                'lawnchair/src/app', 'lawnchair/src/com', 'lawnchair/src/dev',
+                'tests/shared',
+            ]
             aidl.srcDirs = ['lawnchair/aidl']
             res.srcDirs = ['lawnchair/res', 'platform_frameworks_libs_systemui/animationlib/res']
             manifest.srcFile "lawnchair/AndroidManifest.xml"
@@ -337,6 +343,7 @@ composeCompiler {
 addFrameworkJar('framework-15.jar')
 
 dependencies {
+    lawnImplementation "com.github.obieda-hussien.OmniLinkSDK:omni-link-sdk:v3.0.0"
     implementation projects.iconloaderlib
     implementation projects.searchuilib
     implementation projects.animationlib
@@ -463,6 +470,7 @@ licensee {
     allow(SpdxId.GPL_20_or_later)
     allowDependency(libs.libsu.core)
     allowDependency(libs.libsu.service)
+    allowUrl("https://github.com/obieda-hussien/OmniLinkSDK/blob/main/LICENSE")
     allowUrl("https://github.com/patrykmichalik/opto/blob/master/LICENSE")
     allowUrl("https://github.com/RikkaApps/HiddenApiRefinePlugin/blob/main/LICENSE")
     allowUrl("https://opensource.org/licenses/mit-license.php")
