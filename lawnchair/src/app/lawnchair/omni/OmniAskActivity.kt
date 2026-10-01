@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
@@ -30,9 +31,11 @@ import com.omnilink.sdk.OmniJson
 import com.omnilink.sdk.OmniLinkConstants
 import com.omnilink.sdk.PublicOmniRequest
 import com.omnilink.sdk.PublicRequestKind
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 
 /** User-visible, on-demand handoff. No long-lived connection or work on the Home startup path. */
@@ -44,8 +47,16 @@ class OmniAskActivity : ComponentActivity() {
             finish()
             return
         }
+        val loading = AlertDialog.Builder(this)
+            .setTitle(R.string.omni_search_provider)
+            .setMessage(R.string.omni_opening_workspace)
+            .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
         lifecycleScope.launch {
-            val targets = withContext(Dispatchers.IO) {
+            // Keep discovery outside the timeout scope: a slow system Binder call must
+            // not prevent the UI deadline or the Cancel button from returning to Home.
+            val discovery = lifecycleScope.async(Dispatchers.IO) {
                 @Suppress("DEPRECATION")
                 packageManager.queryIntentActivities(
                     Intent(OmniLinkConstants.ACTION_PUBLIC_OMNI_REQUEST),
@@ -60,8 +71,25 @@ class OmniAskActivity : ComponentActivity() {
                     info.loadLabel(packageManager).toString() to
                         Intent(OmniLinkConstants.ACTION_PUBLIC_OMNI_REQUEST)
                             .setClassName(info.packageName, info.name)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }.distinctBy { it.second.component }.sortedBy { it.second.component?.packageName }
+            }
+            val targets = try {
+                withTimeoutOrNull(3_000L) { discovery.await() }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.w("OmniAskActivity", "Workspace discovery failed", error)
+                null
+            } finally {
+                discovery.cancel()
+                loading.dismiss()
+            }
+            if (isFinishing || isDestroyed) return@launch
+            if (targets == null) {
+                Toast.makeText(this@OmniAskActivity, R.string.omni_workspace_unavailable, Toast.LENGTH_LONG).show()
+                finish()
+                return@launch
             }
             val request = PublicOmniRequest(
                 kind = if (query.isEmpty()) PublicRequestKind.OPEN_OMNI else PublicRequestKind.ASK_OMNI,

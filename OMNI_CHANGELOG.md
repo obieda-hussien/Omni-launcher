@@ -7,6 +7,9 @@ TELEGRAM_CHANGELOG.txt remain historical upstream release notes.
 
 ## Unreleased — Omni assistant integration (1 October 2026)
 
+- Fixed recycled-row web click handlers and stale icon updates; route Ask Omni row/icon/keyboard
+  actions to Workspace explicitly. Bypass blocking QSB preference reads for Omni, add visible
+  cancellable discovery with a three-second UI deadline, and use the Workspace robot vector.
 - Added Omni as a selectable search-bar provider and localized Ask Omni action for app-only and
   on-device local search, with fallback, always-show and disable settings.
 - Added a user-visible Workspace draft handoff with missing-app handling and variant selection.

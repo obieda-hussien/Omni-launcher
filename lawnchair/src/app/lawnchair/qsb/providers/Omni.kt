@@ -29,7 +29,11 @@ data object Omni : QsbSearchProvider(
     website = "",
     type = QsbSearchProviderType.LOCAL,
 ) {
-    override suspend fun launch(launcher: Launcher, forceWebsite: Boolean) {
+    override suspend fun launch(launcher: Launcher) {
         launcher.startActivity(OmniAskActivity.createIntent(launcher))
+    }
+
+    override suspend fun launch(launcher: Launcher, forceWebsite: Boolean) {
+        launch(launcher)
     }
 }

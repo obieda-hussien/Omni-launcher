@@ -10,4 +10,6 @@
     <string name="omni_remote_control_description">Requires the same signing certificate. Allows visible app lookup, approved search settings changes, and opening apps or the drawer while Home is in the foreground. Turn off to revoke access.</string>
     <string name="omni_workspace_required">Install or update Omni Dev Workspace to use the Omni search entry point.</string>
     <string name="omni_choose_workspace">Choose Omni Dev Workspace</string>
+    <string name="omni_opening_workspace">Opening Omni Dev Workspace…</string>
+    <string name="omni_workspace_unavailable">Omni Dev Workspace could not be opened. Please try again.</string>
 </resources>

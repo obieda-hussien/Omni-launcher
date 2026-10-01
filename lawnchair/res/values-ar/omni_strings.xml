@@ -10,4 +10,6 @@
     <string name="omni_remote_control_description">يتطلب نفس شهادة التوقيع. يسمح بالبحث عن التطبيقات الظاهرة وتعديل إعدادات البحث بعد الموافقة وفتح التطبيقات أو الدرج عندما تكون الشاشة الرئيسية في المقدمة. أوقفه لإلغاء الوصول.</string>
     <string name="omni_workspace_required">ثبّت أو حدّث Omni Dev Workspace لاستخدام البحث عبر Omni.</string>
     <string name="omni_choose_workspace">اختيار نسخة Omni Dev Workspace</string>
+    <string name="omni_opening_workspace">جاري فتح Omni Dev Workspace…</string>
+    <string name="omni_workspace_unavailable">تعذّر فتح Omni Dev Workspace. حاول مرة أخرى.</string>
 </resources>

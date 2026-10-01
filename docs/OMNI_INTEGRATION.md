@@ -96,3 +96,26 @@ Omni-specific integration development and documentation are maintained by
 Original copyrights, license texts and contributor credits are retained; see [NOTICE.md](../NOTICE.md).
 The SDK keeps its own separate license. [OMNI_CHANGELOG.md](../OMNI_CHANGELOG.md) records
 fork integration work without overwriting historical upstream release notes.
+
+## Search handoff fixes (1 October 2026)
+
+Recycled search rows reset their click listener on every target change. Ask Omni opens the
+explicit in-app handoff from the row, icon and keyboard quick launch; it never falls back to a
+web search. Queued icon updates cannot overwrite a newly bound result. The QSB Omni provider
+bypasses website and local-drawer preferences and does not synchronously read settings on tap.
+Workspace discovery runs on IO with a three-second UI deadline, a visible Cancel button and
+recoverable error handling. Workspace task reuse delivers the public request to MainActivity,
+which puts the validated question into the existing chat composer without auto-submission.
+Install the Workspace build from PR #124: older builds without the public entry point must be
+updated. The launcher cannot insert a draft into an older app that has no receiver for it.
+The assistant icon uses the original Workspace vector path instead of a generic star.
+
+Device regression checks: show a Google/web result, replace the query with a local miss, then
+tap the Ask Omni row, its icon and keyboard action separately. Each should open Workspace with
+the exact question in the composer. Repeat with cold/warm Workspace and an existing draft.
+Select Omni in QSB with both match-drawer-style and force-website settings on/off. It should
+open Workspace directly in each combination. Without an updated Workspace, the update message
+must be dismissible; while discovering, Cancel/Back must return to Home. Confirm the Workspace
+robot logo in provider settings, QSB and search results in Arabic/English and light/dark themes.
+New handoff behavior requires Android CI and physical-device validation; prior policy tests
+do not validate touch routing or freeze behavior.
