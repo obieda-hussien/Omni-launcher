@@ -85,7 +85,7 @@ SDK version bump. [Payloads, setup, errors, privacy and test matrix](docs/OMNI_I
 <!-- OMNI_METRICS_START -->
 | Metric | Count |
 | --- | ---: |
-| Tracked files | **4,974** |
+| Tracked files | **4,975** |
 | Production source files | **2,166** |
 | Production source lines | **466,832** |
 | Test source files | **655** |

@@ -287,9 +287,13 @@ android {
         }
 
         lawn {
-            java.srcDirs = ['src_flags', 'src_shortcuts_overrides', 'lawnchair/src', 'tests/shared']
-            // lawnchair/src also contains conventional unit tests; never package them in the APK.
-            java.exclude 'test/**'
+            // AGP/KGP feed these roots directly to variant compilation. Do not use lawnchair/src:
+            // it also contains test/kotlin, and source-set excludes do not filter that compiler path.
+            java.srcDirs = [
+                'src_flags', 'src_shortcuts_overrides',
+                'lawnchair/src/app', 'lawnchair/src/com', 'lawnchair/src/dev',
+                'tests/shared',
+            ]
             aidl.srcDirs = ['lawnchair/aidl']
             res.srcDirs = ['lawnchair/res', 'platform_frameworks_libs_systemui/animationlib/res']
             manifest.srcFile "lawnchair/AndroidManifest.xml"
@@ -327,10 +331,6 @@ android {
             manifest.srcFile "quickstep/AndroidManifest.xml"
         }
     }
-}
-
-kotlin.sourceSets.named('lawn') {
-    kotlin.exclude 'test/**'
 }
 
 composeCompiler {

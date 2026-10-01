@@ -75,11 +75,16 @@ Control logs contain capability name and caller, never prompt text or app invent
   Workspace ingress/outbound policy, using the actual SDK public contract sources and serialization
   compiler plugin (Kotlin 2.2.21 / serialization 1.9.0). This verifies shared decision logic, not an APK.
 - Changed Launcher Kotlin files pass ktlint 1.8.0; XML parsing and git diff whitespace checks pass.
-- The first GitHub CI attempt passed spotless but found nullable LauncherApps calls and unit tests
-  leaking into APK compilation. Both causes were corrected: capability calls return
-  `launcher_service_unavailable` when needed, and production Java/Kotlin source sets exclude
-  `test/**`. The conventional test files remain intact; this does not rewire the known JVM test gap.
-- Local Gradle 9.3.0 `help` configuration passes. Android compilation still requires CI confirmation.
+- Capability calls return `launcher_service_unavailable` for missing LauncherApps services.
+- Production source roots explicitly include `lawnchair/src/app`, `com` and `dev`; the parent
+  `lawnchair/src` must not be a production root because it also contains conventional JVM tests.
+  AGP/KGP 9.0.1/2.3.0 variant compiler inputs did not honor the attempted source-set exclusions.
+  The conventional test files remain intact; this does not rewire the known JVM test gap.
+- `./gradlew help --no-configuration-cache --init-script scripts/verify_apk_sources.gradle`
+  checks actual Kotlin compiler inputs for all three CI APK variants. It rejects leaked unit tests
+  and missing production Kotlin files. This passed locally for all 451 Lawnchair production Kotlin
+  files in each variant. Android compilation still requires CI confirmation.
+- The CI matrix keeps other variants running after a failure so their diagnostics are retained.
 - Gradle wrapper downloads initially failed. A proxy-aware Gradle 9.3.0 attempt configured the
   projects, then stopped because the installed Java 17 toolchain lacks JAVA_COMPILER. No Kotlin/Java
   Android compilation or APK/device performance result is claimed.
