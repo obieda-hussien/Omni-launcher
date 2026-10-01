@@ -15,6 +15,8 @@ TELEGRAM_CHANGELOG.txt remain historical upstream release notes.
 - Kept remote control consent local-only and guarded foreground app/drawer actions.
 - Added generation checks and search-scope cleanup; moved app-only search work off Main.
 - Documented setup, payloads, privacy, ownership and validation across the three repositories.
+- Fixed CI compilation by excluding conventional unit tests from production Java/Kotlin sources
+  and handling unavailable LauncherApps services with an explicit capability failure.
 - Direct shared-policy suite: 13 passing Kotlin/JUnit tests; Kotlin lint and XML checks passed.
   Full Android compilation/device performance validation remain pending.
 

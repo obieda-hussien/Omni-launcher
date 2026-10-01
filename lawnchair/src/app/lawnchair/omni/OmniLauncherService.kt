@@ -213,11 +213,12 @@ class OmniLauncherService : ExtensionService() {
 
     private fun controlEnabled() = Utilities.getPrefs(this).getBoolean("omni_remote_control", false)
 
-    private suspend fun visibleApps(): List<android.content.pm.LauncherActivityInfo> {
+    private suspend fun visibleApps(): List<android.content.pm.LauncherActivityInfo>? {
+        val launcherApps = getSystemService(LauncherApps::class.java) ?: return null
         val hidden = PreferenceManager2.omniPreferencesDataStore(applicationContext).data.first()[
             stringSetPreferencesKey("hidden_apps"),
         ].orEmpty()
-        return getSystemService(LauncherApps::class.java).getActivityList(null, Process.myUserHandle())
+        return launcherApps.getActivityList(null, Process.myUserHandle())
             .filter { ComponentKey(it.componentName, it.user).toString() !in hidden }
             .sortedBy { it.componentName.flattenToString() }
     }
@@ -227,7 +228,7 @@ class OmniLauncherService : ExtensionService() {
         val offset = if ("offset" in payload) (payload["offset"] as? JsonPrimitive)?.intOrNull ?: return failure("invalid_offset") else 0
         val limit = if ("limit" in payload) (payload["limit"] as? JsonPrimitive)?.intOrNull ?: return failure("invalid_limit") else 20
         if (offset < 0 || limit !in 1..40) return failure("invalid_page")
-        val apps = visibleApps()
+        val apps = visibleApps() ?: return failure("launcher_service_unavailable")
         if (!controlEnabled()) return failure("control_disabled")
         val page = apps.drop(offset).take(limit)
         return success(
@@ -295,7 +296,8 @@ class OmniLauncherService : ExtensionService() {
         if (payload.keys != setOf("component")) return failure("invalid_payload")
         val componentText = (payload["component"] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return failure("invalid_component")
         val component = ComponentName.unflattenFromString(componentText) ?: return failure("invalid_component")
-        if (visibleApps().none { it.componentName == component }) return failure("app_not_visible")
+        val apps = visibleApps() ?: return failure("launcher_service_unavailable")
+        if (apps.none { it.componentName == component }) return failure("app_not_visible")
         return withContext(Dispatchers.Main) {
             val launcher = LawnchairLauncher.instance
             when {
@@ -313,7 +315,8 @@ class OmniLauncherService : ExtensionService() {
                         if (!controlEnabled()) return@launchOnIo failure("control_disabled")
                         if (expired(request)) return@launchOnIo failure("deadline_exceeded")
                         if (!launcher.hasBeenResumed()) return@launchOnIo failure("foreground_required")
-                        getSystemService(LauncherApps::class.java).startMainActivity(component, Process.myUserHandle(), null, null)
+                        val launcherApps = getSystemService(LauncherApps::class.java) ?: return@launchOnIo failure("launcher_service_unavailable")
+                        launcherApps.startMainActivity(component, Process.myUserHandle(), null, null)
                         success(buildJsonObject { put("opened", component.flattenToString()) })
                     }
                 }
