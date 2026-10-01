@@ -337,6 +337,7 @@ composeCompiler {
 addFrameworkJar('framework-15.jar')
 
 dependencies {
+    lawnImplementation "com.github.obieda-hussien.OmniLinkSDK:omni-link-sdk:v3.0.0"
     implementation projects.iconloaderlib
     implementation projects.searchuilib
     implementation projects.animationlib
@@ -463,6 +464,7 @@ licensee {
     allow(SpdxId.GPL_20_or_later)
     allowDependency(libs.libsu.core)
     allowDependency(libs.libsu.service)
+    allowUrl("https://github.com/obieda-hussien/OmniLinkSDK/blob/main/LICENSE")
     allowUrl("https://github.com/patrykmichalik/opto/blob/master/LICENSE")
     allowUrl("https://github.com/RikkaApps/HiddenApiRefinePlugin/blob/main/LICENSE")
     allowUrl("https://opensource.org/licenses/mit-license.php")

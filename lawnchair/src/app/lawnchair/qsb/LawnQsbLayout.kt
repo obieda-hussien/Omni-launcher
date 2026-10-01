@@ -27,6 +27,7 @@ import app.lawnchair.preferences2.subscribeBlocking
 import app.lawnchair.qsb.providers.AppSearch
 import app.lawnchair.qsb.providers.Google
 import app.lawnchair.qsb.providers.GoogleGo
+import app.lawnchair.qsb.providers.Omni
 import app.lawnchair.qsb.providers.PixelSearch
 import app.lawnchair.qsb.providers.QsbSearchProvider
 import app.lawnchair.theme.color.ColorOption
@@ -243,7 +244,7 @@ class LawnQsbLayout(context: Context, attrs: AttributeSet?) : FrameLayout(contex
         ): QsbSearchProvider {
             val provider = preferenceManager.hotseatQsbProvider.firstBlocking()
 
-            return if (provider == AppSearch ||
+            return if (provider == AppSearch || provider == Omni ||
                 resolveIntent(context, provider.createSearchIntent()) ||
                 resolveIntent(context, provider.createWebsiteIntent())
             ) {
