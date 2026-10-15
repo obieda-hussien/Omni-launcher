@@ -119,3 +119,55 @@ must be dismissible; while discovering, Cancel/Back must return to Home. Confirm
 robot logo in provider settings, QSB and search results in Arabic/English and light/dark themes.
 New handoff behavior requires Android CI and physical-device validation; prior policy tests
 do not validate touch routing or freeze behavior.
+
+## First-party signer verification and lean release builds
+
+OmniLinkSDK `v3.0.0` has separate `omni-link-sdk` and `omni-link-transport` artifacts.
+This launcher uses only the Android SDK module (already pinned by the Lawnchair flavor).
+The SDK AAR intentionally does **not** declare `BIND_EXTENSION` or `BIND_AGENT`:
+the OmniDev Workspace host declares both Android `signature` permissions.
+Launcher requests `BIND_EXTENSION` only; it does not ask for the agent-gateway permission.
+It exposes `OmniLauncherService` with `android:permission` protection; SDK
+`SameSignerSecurityValidator`, exact Workspace package ceilings and local consent enforce
+additional boundaries. Merely declaring a permission does not grant system or OEM privileges,
+and `FIRST_PARTY` is not the same as `OMNI_CORE`.
+
+Launcher Settings now checks the actual installed Workspace signer(s) on a worker thread.
+The control toggle cannot be newly enabled until at least one recognized Workspace package
+has a matching signer; an existing grant can always be disabled. This is UI feedback, **not**
+a replacement for the service's checks. Relaunch Settings after installing or updating Workspace
+to refresh the displayed signing status.
+
+Use the **same key** for each installed production Omni app. No key is bundled in this repo:
+
+```bash
+# Optional shared debug keystore. Otherwise Gradle uses its regular local debug signer.
+export OMNI_DEBUG_KEYSTORE=/secure/path/omni-debug.keystore
+export OMNI_DEBUG_STORE_PASSWORD=android
+export OMNI_DEBUG_KEY_ALIAS=androiddebugkey
+export OMNI_DEBUG_KEY_PASSWORD=android
+
+# Optional release signing. All four values are mandatory together.
+export OMNI_RELEASE_KEYSTORE=/secure/path/omni-release.keystore
+export OMNI_RELEASE_STORE_PASSWORD='...'
+export OMNI_RELEASE_KEY_ALIAS='omni_ecosystem_key'
+export OMNI_RELEASE_KEY_PASSWORD='...'
+./gradlew assembleLawnWithQuickstepGithubRelease
+```
+
+With no release signing environment, the GitHub release APK remains **unsigned** by design;
+an unsigned APK is not installable and cannot be assumed trusted. Debug application IDs
+may differ from the Workspace package allowlist even when signed with a shared key;
+test the exact installed package/flavor and its signature before claiming end-to-end trust.
+Never put signing secrets or keystores in Git.
+
+For size, Release already uses R8 minification and resource shrinking; this change also
+enables R8 optimizations previously disabled by the local ProGuard configuration, and
+excludes generated pseudolocales from Release (they remain enabled in Debug). The broad
+Launcher3/Quickstep reflection keep rules remain intact. **Measure the actual unsigned
+release APK size and test icon/grid/Recents/search flows on the Infinix HOT 10S before
+claiming a measured size reduction or performance improvement.**
+
+For user customization, the existing Lawnchair grids, icon packs, colors, gestures,
+widgets and search controls are retained rather than replacing them with heavier UI.
+Only settings-screen signing verification is added; the Home rendering hot path is unchanged.
