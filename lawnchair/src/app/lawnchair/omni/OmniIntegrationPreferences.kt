@@ -39,7 +39,10 @@ fun OmniIntegrationPreferences() {
         value = withContext(Dispatchers.IO) {
             OmniAskActivity.WORKSPACE_PACKAGES.any { workspacePackage ->
                 runCatching {
-                    context.packageManager.checkSignatures(context.packageName, workspacePackage) == PackageManager.SIGNATURE_MATCH
+                    context.packageManager.checkSignatures(
+                        context.packageName,
+                        workspacePackage,
+                    ) == PackageManager.SIGNATURE_MATCH
                 }.getOrDefault(false)
             }
         }
