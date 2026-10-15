@@ -204,7 +204,7 @@ android {
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach {
             def channel = variant.productFlavors.last().name
-            outputFileName = "OmniLauncher.${variant.versionName}.$channel.${variant.buildType.name}${variant.buildType.name == 'release' ? '.unsigned' : ''}.apk"
+            outputFileName = "OmniLauncher.${variant.versionName}.$channel.${variant.buildType.name}${variant.buildType.name == 'release' && !omniReleaseSigningReady ? '.unsigned' : ''}.apk"
         }
     }
 
