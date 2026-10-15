@@ -16,18 +16,44 @@
 
 package app.lawnchair.omni
 
+import android.content.pm.PackageManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import com.android.launcher3.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun OmniIntegrationPreferences() {
     val prefs = preferenceManager()
-    PreferenceGroup(heading = stringResource(R.string.omni_integration)) {
+    val context = LocalContext.current
+    // PackageManager Binder calls belong off Main, including on the settings screen.
+    // The SDK independently repeats signer and capability checks for every incoming call.
+    val sharedSigner = produceState<Boolean?>(initialValue = null, key1 = context) {
+        value = withContext(Dispatchers.IO) {
+            OmniAskActivity.WORKSPACE_PACKAGES.any { workspacePackage ->
+                runCatching {
+                    context.packageManager.checkSignatures(context.packageName, workspacePackage) == PackageManager.SIGNATURE_MATCH
+                }.getOrDefault(false)
+            }
+        }
+    }.value
+    val trustStatus = when (sharedSigner) {
+        null -> stringResource(R.string.omni_trust_checking)
+        true -> stringResource(R.string.omni_trust_verified)
+        false -> stringResource(R.string.omni_trust_unverified)
+    }
+    val remoteControl = prefs.omniRemoteControl.getAdapter()
+    PreferenceGroup(
+        heading = stringResource(R.string.omni_integration),
+        description = trustStatus,
+    ) {
         SwitchPreference(
             adapter = prefs.omniSearchSuggestions.getAdapter(),
             label = stringResource(R.string.omni_suggestions),
@@ -39,9 +65,11 @@ fun OmniIntegrationPreferences() {
             enabled = prefs.omniSearchSuggestions.getAdapter().state.value,
         )
         SwitchPreference(
-            adapter = prefs.omniRemoteControl.getAdapter(),
+            adapter = remoteControl,
             label = stringResource(R.string.omni_remote_control),
             description = stringResource(R.string.omni_remote_control_description),
+            // Always permit revocation. Do not enable a new privileged opt-in without a verified signer.
+            enabled = sharedSigner == true || remoteControl.state.value,
         )
     }
 }
