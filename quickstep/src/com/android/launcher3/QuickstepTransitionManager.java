@@ -34,7 +34,6 @@ import static android.window.StartingWindowInfo.STARTING_WINDOW_TYPE_SPLASH_SCRE
 import static android.window.TransitionFilter.CONTAINER_ORDER_TOP;
 
 import static com.android.app.animation.Interpolators.ACCELERATE_1_5;
-import static com.android.app.animation.Interpolators.AGGRESSIVE_EASE;
 import static com.android.app.animation.Interpolators.DECELERATE_1_5;
 import static com.android.app.animation.Interpolators.DECELERATE_1_7;
 import static com.android.app.animation.Interpolators.EXAGGERATED_EASE;
@@ -551,7 +550,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
             if (!skipAllAppsScale) {
                 SCALE_PROPERTY.set(appsView, scales[0]);
                 ObjectAnimator scale = ObjectAnimator.ofFloat(appsView, SCALE_PROPERTY, scales);
-                scale.setInterpolator(AGGRESSIVE_EASE);
+                scale.setInterpolator(OmniMotionProfile.getHomeRevealInterpolator());
                 scale.setDuration(CONTENT_SCALE_DURATION);
                 launcherAnimator.play(scale);
             }
@@ -646,7 +645,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
         overview.setFreezeViewVisibility(true);
 
         ObjectAnimator scaleAnim = ObjectAnimator.ofFloat(overview, SCALE_PROPERTY, scales);
-        scaleAnim.setInterpolator(AGGRESSIVE_EASE);
+        scaleAnim.setInterpolator(OmniMotionProfile.getHomeRevealInterpolator());
         scaleAnim.setDuration(CONTENT_SCALE_DURATION);
         anim.play(scaleAnim);
 
