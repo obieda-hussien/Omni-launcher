@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Omni Launcher contributors.
+ * Copyright (C) 2026 Abdelrahman Hussein (عبدالرحمن حسين)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,12 @@ public final class OmniFusionMotion {
 
     /** Duration for the radial workspace reveal used by the newer Quickstep path. */
     public static final long RADIAL_REVEAL_DURATION_MS = 480L;
+
+    /** Duration for the spring-based staggered workspace reveal fallback. */
+    public static final int STAGGERED_HOME_REVEAL_DURATION_MS = 250;
+
+    /** Delay between rows in the staggered workspace reveal. */
+    public static final int HOME_REVEAL_ROW_STAGGER_DELAY_MS = 10;
 
     /** Keep content appearing quickly so the scale motion does not feel sluggish. */
     public static final long CONTENT_FADE_DURATION_MS = 180L;
