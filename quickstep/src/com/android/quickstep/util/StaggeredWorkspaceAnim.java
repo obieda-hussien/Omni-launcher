@@ -30,11 +30,11 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.view.View;
-
-import app.lawnchair.animation.OmniMotionProfile;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+
+import app.lawnchair.animation.OmniMotionProfile;
 
 import com.android.launcher3.CellLayout;
 import com.android.launcher3.DeviceProfile;
