@@ -20,17 +20,17 @@ import android.animation.AnimatorSet
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.view.View
-import app.lawnchair.animation.OmniMotionProfile
 import androidx.core.graphics.transform
+import app.lawnchair.animation.OmniMotionProfile
 import com.android.app.animation.Interpolators
 import com.android.app.animation.Interpolators.LINEAR
+import com.android.launcher3.anim.AnimatorListeners
+import com.android.launcher3.anim.PendingAnimation
+import com.android.launcher3.anim.PropertySetter
 import com.android.launcher3.LauncherAnimUtils.HOTSEAT_SCALE_PROPERTY_FACTORY
 import com.android.launcher3.LauncherAnimUtils.SCALE_INDEX_WORKSPACE_STATE
 import com.android.launcher3.LauncherAnimUtils.WORKSPACE_SCALE_PROPERTY_FACTORY
 import com.android.launcher3.LauncherState
-import com.android.launcher3.anim.AnimatorListeners
-import com.android.launcher3.anim.PendingAnimation
-import com.android.launcher3.anim.PropertySetter
 import com.android.launcher3.states.StateAnimationConfig
 import com.android.launcher3.states.StateAnimationConfig.SKIP_DEPTH_CONTROLLER
 import com.android.launcher3.states.StateAnimationConfig.SKIP_OVERVIEW
@@ -54,7 +54,6 @@ class ScalingWorkspaceRevealAnim(
         private const val MIN_ALPHA = 0f
         private const val MAX_SIZE = 1f
         private const val MIN_SIZE = 0.85f
-
     }
 
     private val animation = PendingAnimation(SCALE_DURATION_MS)
