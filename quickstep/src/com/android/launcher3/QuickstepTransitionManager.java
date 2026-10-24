@@ -114,11 +114,12 @@ import android.view.animation.PathInterpolator;
 import android.window.RemoteTransition;
 import android.window.TransitionFilter;
 
-import app.lawnchair.animation.OmniMotionProfile;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
+
+import app.lawnchair.animation.OmniMotionProfile;
+import app.lawnchair.compat.LawnchairQuickstepCompat;
 
 import com.android.internal.jank.Cuj;
 import com.android.launcher3.DeviceProfile.OnDeviceProfileChangeListener;
@@ -176,8 +177,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import app.lawnchair.compat.LawnchairQuickstepCompat;
 
 /**
  * Manages the opening and closing app transitions from Launcher
