@@ -30,6 +30,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.view.View;
+
+import app.lawnchair.animation.OmniMotionProfile;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -283,7 +285,7 @@ public class StaggeredWorkspaceAnim {
 
         v.setAlpha(0);
         ObjectAnimator alpha = ObjectAnimator.ofFloat(v, View.ALPHA, 0f, 1f);
-        alpha.setInterpolator(OmniFusionMotion.INTERPOLATOR);
+        alpha.setInterpolator(OmniMotionProfile.getHomeRevealInterpolator());
         alpha.setDuration(duration);
         alpha.setStartDelay(startDelay);
         alpha.addListener(new AnimatorListenerAdapter() {
