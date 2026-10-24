@@ -509,9 +509,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override fun toString(): String {
@@ -558,9 +556,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override fun toString(): String {
@@ -607,9 +603,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override val windowTransitionRadius = 0.16f
