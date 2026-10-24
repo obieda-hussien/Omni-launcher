@@ -79,6 +79,8 @@ class LawnchairApp : Application() {
         instance = this
         DeviceTierManager.getInstance(this)
         motionProfileScope.launch {
+            // Pre-create immutable interpolators off the UI thread before reading stored settings.
+            OmniMotionProfile.setStyle(OmniMotionProfile.STYLE_FUSION)
             PreferenceManager2.omniPreferencesDataStore(this@LawnchairApp).data
                 .map { preferences ->
                     preferences[stringPreferencesKey("omni_motion_profile")]
