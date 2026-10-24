@@ -54,8 +54,8 @@ class ScalingWorkspaceRevealAnim(
         private const val MAX_SIZE = 1f
         private const val MIN_SIZE = 0.85f
 
-        /** Shared emphasized easing curve used by Omni Fusion Motion. */
-        private val SCALE_INTERPOLATOR = OmniFusionMotion.INTERPOLATOR
+        /** Keep the established radial scale curve while sharing its definition. */
+        private val SCALE_INTERPOLATOR = OmniFusionMotion.RADIAL_SCALE_INTERPOLATOR
     }
 
     private val animation = PendingAnimation(SCALE_DURATION_MS)
