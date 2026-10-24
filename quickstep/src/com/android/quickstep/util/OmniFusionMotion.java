@@ -15,7 +15,6 @@
  */
 package com.android.quickstep.util;
 
-
 /**
  * Shared motion tokens for Omni Fusion Motion.
  *
