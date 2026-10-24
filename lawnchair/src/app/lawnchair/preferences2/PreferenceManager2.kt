@@ -29,6 +29,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import app.lawnchair.data.Converters
+import app.lawnchair.animation.OmniMotionProfile
 import app.lawnchair.font.FontCache
 import app.lawnchair.gestures.config.GestureHandlerConfig
 import app.lawnchair.gestures.type.GestureType
@@ -98,6 +99,12 @@ class PreferenceManager2 private constructor(private val context: Context) :
     val darkStatusBar = preference(
         key = booleanPreferencesKey(name = "dark_status_bar"),
         defaultValue = context.resources.getBoolean(R.bool.config_default_dark_status_bar),
+    )
+
+    val omniMotionProfile = preference(
+        key = stringPreferencesKey(name = "omni_motion_profile"),
+        defaultValue = OmniMotionProfile.STYLE_FUSION,
+        onSet = OmniMotionProfile::setStyle,
     )
 
     val hotseatMode = preference(
