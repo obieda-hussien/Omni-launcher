@@ -28,8 +28,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -37,24 +37,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import app.lawnchair.backup.LawnchairBackup
-import app.lawnchair.animation.OmniMotionProfile
-import app.lawnchair.preferences2.PreferenceManager2
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import app.lawnchair.animation.OmniMotionProfile
+import app.lawnchair.backup.LawnchairBackup
 import app.lawnchair.preferences.PreferenceManager
+import app.lawnchair.preferences2.PreferenceManager2
 import app.lawnchair.ui.ModalBottomSheetContent
 import app.lawnchair.ui.preferences.destinations.openAppInfo
 import app.lawnchair.util.DeviceTierManager
-import app.lawnchair.util.WallpaperBlurRenderer
 import app.lawnchair.util.restartLauncher
 import app.lawnchair.util.unsafeLazy
+import app.lawnchair.util.WallpaperBlurRenderer
 import app.lawnchair.views.ComposeBottomSheet
 import com.android.launcher3.BuildConfig
 import com.android.launcher3.InvariantDeviceProfile
@@ -63,6 +56,13 @@ import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.android.quickstep.RecentsActivity
 import com.android.systemui.shared.system.QuickStepContract
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob
 import java.io.File
 
 class LawnchairApp : Application() {
