@@ -47,8 +47,8 @@ class ScalingWorkspaceRevealAnim(
     windowTargetRect: RectF?
 ) {
     companion object {
-        private const val FADE_DURATION_MS = OmniFusionMotion.CONTENT_FADE_DURATION_MS
-        private const val SCALE_DURATION_MS = OmniFusionMotion.RADIAL_REVEAL_DURATION_MS
+        private val FADE_DURATION_MS = OmniFusionMotion.CONTENT_FADE_DURATION_MS
+        private val SCALE_DURATION_MS = OmniFusionMotion.RADIAL_REVEAL_DURATION_MS
         private const val MAX_ALPHA = 1f
         private const val MIN_ALPHA = 0f
         private const val MAX_SIZE = 1f
