@@ -127,12 +127,12 @@ fun QuickstepPreferences(
 
         if (BuildConfig.OMNI_SHIZUKU_ENABLED) {
             PreferenceGroup(
-                heading = "Omni System Controls",
-                description = "Optional system-wide animation tuning through Shizuku. Does not overclock the CPU or GPU.",
+                heading = "Omni Performance Diagnostics",
+                description = "Optional read-only frame diagnostics through Shizuku. Animation durations and display settings are not changed.",
             ) {
                 ClickablePreference(
-                    label = "Open Shizuku controls",
-                    subtitle = "Requires Shizuku to be started and permission granted by you.",
+                    label = "Open performance diagnostics",
+                    subtitle = "Capture launcher frame statistics after reproducing a visual hitch.",
                     onClick = {
                         context.startActivity(
                             Intent().setClassName(
