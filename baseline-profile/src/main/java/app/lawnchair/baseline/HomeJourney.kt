@@ -44,8 +44,15 @@ internal fun MacrobenchmarkScope.exerciseAppLaunchAndReturnHome() {
     search.text = "Settings"
     device.waitForIdle()
 
-    val settings = device.findObject(By.text("Settings"))
-    check(settings != null) { "Settings was not found in the launcher app drawer" }
+    // Exclude the search EditText itself, which also contains the word "Settings".
+    val settingsSelector = By.pkg(Constants.PACKAGE_NAME)
+        .clazz("com.android.launcher3.BubbleTextView")
+        .text("Settings")
+    check(device.wait(Until.hasObject(settingsSelector), 5_000)) {
+        "Settings app icon was not found in the launcher search results"
+    }
+    val settings = device.findObject(settingsSelector)
+    check(settings != null) { "Settings app icon disappeared before it could be clicked" }
     settings.click()
     check(device.wait(Until.hasObject(By.pkg("com.android.settings")), 10_000)) {
         "Settings did not open from the launcher"
