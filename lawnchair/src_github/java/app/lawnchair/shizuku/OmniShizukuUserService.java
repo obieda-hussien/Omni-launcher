@@ -86,7 +86,7 @@ public final class OmniShizukuUserService extends IOmniShizukuService.Stub {
             if (!writeSetting(key, value)) {
                 for (int i = completed - 1; i >= 0; i--) {
                     String oldValue = previous[i];
-                    writeSetting(ANIMATION_KEYS[i],
+                    restoreSetting(ANIMATION_KEYS[i],
                         "null".equals(oldValue) || oldValue.isEmpty() ? DEFAULT_SCALE : oldValue);
                 }
                 return false;
@@ -104,7 +104,23 @@ public final class OmniShizukuUserService extends IOmniShizukuService.Stub {
         if (result.exitCode != 0 || result.output == null || result.output.isEmpty()) {
             return "unavailable";
         }
-        return result.output;
+        return "null".equals(result.output) ? DEFAULT_SCALE : result.output;
+    }
+
+    private static boolean restoreSetting(String key, String previousValue) {
+        if (!isAllowedKey(key) || !isValidScale(previousValue)) {
+            return false;
+        }
+        return runSettings("put", "global", key, previousValue).exitCode == 0;
+    }
+
+    private static boolean isValidScale(String value) {
+        try {
+            float scale = Float.parseFloat(value);
+            return Float.isFinite(scale) && scale >= 0f && scale <= 10f;
+        } catch (NumberFormatException error) {
+            return false;
+        }
     }
 
     private static boolean writeSetting(String key, String value) {
