@@ -25,18 +25,17 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * GitHub-flavor-only controls. Every privileged operation is an allowlisted preset in UserService.
+ * GitHub-flavor-only diagnostics. Shizuku is used to inspect gfxinfo, not to tune animation speed.
  */
 class OmniShizukuControlsActivity : Activity() {
 
     private lateinit var statusView: TextView
     private lateinit var permissionButton: Button
-    private lateinit var balancedButton: Button
-    private lateinit var snappyButton: Button
-    private lateinit var restoreButton: Button
+    private lateinit var captureButton: Button
+    private lateinit var resetStatsButton: Button
 
     private val worker: ExecutorService by lazy {
-        Executors.newSingleThreadExecutor { task -> Thread(task, "OmniShizukuControls") }
+        Executors.newSingleThreadExecutor { task -> Thread(task, "OmniShizukuDiagnostics") }
     }
 
     @Volatile
@@ -47,19 +46,19 @@ class OmniShizukuControlsActivity : Activity() {
         Shizuku.UserServiceArgs(
             ComponentName(packageName, OmniShizukuUserService::class.java.name),
         )
-            .tag("omni-system-controls-v1")
+            .tag("omni-performance-diagnostics-v2")
             .daemon(false)
-            .processNameSuffix("omni-controls")
+            .processNameSuffix("omni-performance")
             .debuggable(com.android.launcher3.BuildConfig.DEBUG)
-            .version(1)
+            .version(2)
     }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             service = IOmniShizukuService.Stub.asInterface(binder)
             runOnUiThread {
-                statusView.text = "Connected to Shizuku. Reading settings…"
-                setControlsEnabled(true)
+                statusView.text = "Connected to Shizuku. Reading device diagnostics…"
+                setDiagnosticsEnabled(true)
             }
             refreshStatus()
         }
@@ -69,7 +68,7 @@ class OmniShizukuControlsActivity : Activity() {
             bindRequested = false
             runOnUiThread {
                 statusView.text = "Shizuku service disconnected. Reconnect to continue."
-                setControlsEnabled(false)
+                setDiagnosticsEnabled(false)
             }
         }
     }
@@ -82,7 +81,7 @@ class OmniShizukuControlsActivity : Activity() {
         bindRequested = false
         runOnUiThread {
             statusView.text = "Shizuku stopped. Start it again, then reconnect."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
         }
     }
     private val permissionResultListener =
@@ -92,7 +91,7 @@ class OmniShizukuControlsActivity : Activity() {
                     if (grantResult == PackageManager.PERMISSION_GRANTED) {
                         connectUserService()
                     } else {
-                        statusView.text = "Permission was not granted. No system settings were changed."
+                        statusView.text = "Permission was not granted. No settings were changed."
                     }
                 }
             }
@@ -100,7 +99,7 @@ class OmniShizukuControlsActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = "Omni System Controls"
+        title = "Omni Performance Diagnostics"
         buildContent()
 
         Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
@@ -126,38 +125,35 @@ class OmniShizukuControlsActivity : Activity() {
         fun dp(value: Int) = (value * density).toInt()
 
         statusView = TextView(this).apply {
-            textSize = 14f
+            textSize = 13f
             text = "Checking Shizuku…"
+            setTextIsSelectable(true)
             setPadding(0, dp(12), 0, dp(20))
         }
         val description = TextView(this).apply {
             textSize = 15f
-            text = "These presets change Android's three global animation scales only. They do not overclock the CPU/GPU or change thermal limits. Shizuku must be started by you and its permission must be approved."
+            text = "Read-only performance diagnostics for Omni. This screen does not change animation duration, refresh rate, CPU/GPU policy, or thermal settings. Start Shizuku yourself and approve the permission request. Reproduce an app-open / return-home hitch, then capture gfxinfo frame statistics."
             setPadding(0, 0, 0, dp(16))
         }
 
         permissionButton = button("Connect / request Shizuku permission") {
             requestPermissionOrConnect()
         }
-        balancedButton = button("Balanced animations · 0.75×") {
-            applyPreset(PRESET_BALANCED, "Balanced preset applied.")
+        captureButton = button("Capture launcher frame statistics") {
+            captureFrameStats()
         }
-        snappyButton = button("Snappy animations · 0.5×") {
-            applyPreset(PRESET_SNAPPY, "Snappy preset applied.")
+        resetStatsButton = button("Reset frame-stat counters") {
+            resetFrameStats()
         }
-        restoreButton = button("Restore Android default · 1.0×") {
-            applyPreset(PRESET_DEFAULT, "Default animation scales restored.")
-        }
-        setControlsEnabled(false)
+        setDiagnosticsEnabled(false)
 
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(16), dp(20), dp(24))
             addView(description, matchWidthWrapHeight())
             addView(permissionButton, matchWidthWrapHeight())
-            addView(balancedButton, matchWidthWrapHeight())
-            addView(snappyButton, matchWidthWrapHeight())
-            addView(restoreButton, matchWidthWrapHeight())
+            addView(captureButton, matchWidthWrapHeight())
+            addView(resetStatsButton, matchWidthWrapHeight())
             addView(statusView, matchWidthWrapHeight())
         }
         setContentView(ScrollView(this).apply { addView(content) })
@@ -170,32 +166,34 @@ class OmniShizukuControlsActivity : Activity() {
         }
 
     private fun matchWidthWrapHeight() =
-        LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
 
-    private fun setControlsEnabled(connected: Boolean) {
-        balancedButton.isEnabled = connected && service != null
-        snappyButton.isEnabled = connected && service != null
-        restoreButton.isEnabled = connected && service != null
+    private fun setDiagnosticsEnabled(connected: Boolean) {
+        captureButton.isEnabled = connected && service != null
+        resetStatsButton.isEnabled = connected && service != null
     }
 
     private fun refreshConnectionState() {
         if (!Shizuku.pingBinder()) {
             statusView.text = "Shizuku is not running. Start it from the Shizuku app, then tap Connect."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
             return
         }
         if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
             connectUserService()
         } else {
             statusView.text = "Shizuku is available. Tap Connect to grant this app permission."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
         }
     }
 
     private fun requestPermissionOrConnect() {
         if (!Shizuku.pingBinder()) {
             statusView.text = "Shizuku is not running. Start it first (wireless debugging works on Android 11+)."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
             return
         }
         if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
@@ -209,17 +207,17 @@ class OmniShizukuControlsActivity : Activity() {
         if (bindRequested || service != null) return
         if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
             statusView.text = "Start Shizuku and grant permission before connecting."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
             return
         }
         bindRequested = true
-        statusView.text = "Connecting to the restricted Shizuku service…"
+        statusView.text = "Connecting to the restricted diagnostics service…"
         try {
             Shizuku.bindUserService(serviceArgs, serviceConnection)
         } catch (error: Throwable) {
             bindRequested = false
             statusView.text = "Connection failed: ${error.javaClass.simpleName}: ${error.message.orEmpty()}"
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
         }
     }
 
@@ -227,39 +225,62 @@ class OmniShizukuControlsActivity : Activity() {
         val current = service ?: return
         worker.execute {
             val message = runCatching { current.getStatus() }
-                .getOrElse { "Could not read settings: ${it.javaClass.simpleName}: ${it.message.orEmpty()}" }
+                .getOrElse {
+                    "Could not read diagnostics: ${it.javaClass.simpleName}: ${it.message.orEmpty()}"
+                }
             runOnUiThread { statusView.text = message }
         }
     }
 
-    private fun applyPreset(preset: Int, successMessage: String) {
+    private fun captureFrameStats() {
         val current = service
         if (current == null) {
             statusView.text = "Connect to Shizuku first."
-            setControlsEnabled(false)
+            setDiagnosticsEnabled(false)
             return
         }
-        setControlsEnabled(false)
-        statusView.text = "Applying the selected preset…"
+        setDiagnosticsEnabled(false)
+        statusView.text = "Capturing frame statistics…"
         worker.execute {
-            val message = runCatching {
-                if (current.applyAnimationPreset(preset)) {
-                    "$successMessage\n\n${current.getStatus()}"
-                } else {
-                    "Could not apply all settings. Check Shizuku state and try again."
+            val message = runCatching { current.getFrameStats() }
+                .getOrElse {
+                    "Capture failed: ${it.javaClass.simpleName}: ${it.message.orEmpty()}"
                 }
-            }.getOrElse { "Operation failed: ${it.javaClass.simpleName}: ${it.message.orEmpty()}" }
             runOnUiThread {
                 statusView.text = message
-                setControlsEnabled(service != null)
+                setDiagnosticsEnabled(service != null)
+            }
+        }
+    }
+
+    private fun resetFrameStats() {
+        val current = service
+        if (current == null) {
+            statusView.text = "Connect to Shizuku first."
+            setDiagnosticsEnabled(false)
+            return
+        }
+        setDiagnosticsEnabled(false)
+        statusView.text = "Resetting gfxinfo counters only…"
+        worker.execute {
+            val message = runCatching {
+                if (current.resetFrameStats()) {
+                    "Frame counters reset. This does not change animation or display settings.\n\n"
+                        + current.getStatus()
+                } else {
+                    "Could not reset gfxinfo counters. Check that Shizuku is still running."
+                }
+            }.getOrElse {
+                "Reset failed: ${it.javaClass.simpleName}: ${it.message.orEmpty()}"
+            }
+            runOnUiThread {
+                statusView.text = message
+                setDiagnosticsEnabled(service != null)
             }
         }
     }
 
     private companion object {
         const val REQUEST_PERMISSION = 7401
-        const val PRESET_DEFAULT = 0
-        const val PRESET_BALANCED = 1
-        const val PRESET_SNAPPY = 2
     }
 }
