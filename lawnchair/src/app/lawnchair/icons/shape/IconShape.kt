@@ -551,6 +551,8 @@ open class IconShape(
 
         private val matrix = Matrix()
 
+        override val windowTransitionRadius = .35f
+
         override fun getMaskPath(): Path {
             return Path().also { addToPath(it, 0f, 0f, 100f, 100f) }
         }
