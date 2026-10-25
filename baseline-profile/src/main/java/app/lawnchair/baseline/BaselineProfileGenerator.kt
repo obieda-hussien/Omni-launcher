@@ -46,6 +46,7 @@ class BaselineProfileGenerator {
             pressHome()
             startActivityAndWait()
             exerciseDrawerAndSearch()
+            exerciseAppLaunchAndReturnHome()
         }
     }
 }

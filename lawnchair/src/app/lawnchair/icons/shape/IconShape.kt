@@ -328,6 +328,9 @@ open class IconShape(
         1f,
     ) {
 
+        // Approximate a squircle with the single corner radius supported by SurfaceControl.
+        override val windowTransitionRadius = .45f
+
         override fun toString(): String {
             return "squircle"
         }
@@ -343,6 +346,8 @@ open class IconShape(
         1f,
         1f,
     ) {
+
+        override val windowTransitionRadius = .5f
 
         override fun toString(): String {
             return "sammy"
@@ -360,6 +365,8 @@ open class IconShape(
         .3f,
     ) {
 
+        override val windowTransitionRadius = .85f
+
         override fun toString(): String {
             return "teardrop"
         }
@@ -375,6 +382,8 @@ open class IconShape(
         PointF(1f, .6f),
         PointF(1f, .6f),
     ) {
+
+        override val windowTransitionRadius = .6f
 
         override fun toString(): String {
             return "cylinder"
@@ -410,6 +419,8 @@ open class IconShape(
         .5f,
     ) {
 
+        override val windowTransitionRadius = 0f
+
         override fun toString(): String {
             return "octagon"
         }
@@ -425,6 +436,8 @@ open class IconShape(
         PointF(1f, .5f),
         PointF(1f, .5f),
     ) {
+
+        override val windowTransitionRadius = 0f
 
         override fun toString(): String {
             return "hexagon"
@@ -489,6 +502,8 @@ open class IconShape(
 
         private val matrix = Matrix()
 
+        override val windowTransitionRadius = .35f
+
         override fun getMaskPath(): Path {
             return Path().also { addToPath(it, 0f, 0f, 100f, 100f) }
         }
@@ -509,9 +524,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override fun toString(): String {
@@ -538,6 +551,8 @@ open class IconShape(
 
         private val matrix = Matrix()
 
+        override val windowTransitionRadius = .35f
+
         override fun getMaskPath(): Path {
             return Path().also { addToPath(it, 0f, 0f, 100f, 100f) }
         }
@@ -558,9 +573,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override fun toString(): String {
@@ -607,9 +620,7 @@ open class IconShape(
             matrix.setScale(width / 100f, height / 100f)
             matrix.postTranslate(left, top)
 
-            val tempPath = Path(parsedPath)
-            tempPath.transform(matrix)
-            path.addPath(tempPath)
+            path.addPath(parsedPath, matrix)
         }
 
         override val windowTransitionRadius = 0.16f

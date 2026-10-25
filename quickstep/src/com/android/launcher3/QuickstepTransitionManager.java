@@ -119,6 +119,7 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import app.lawnchair.animation.OmniMotionProfile;
+import app.lawnchair.icons.shape.IconShapeManager;
 import app.lawnchair.compat.LawnchairQuickstepCompat;
 
 import com.android.internal.jank.Cuj;
@@ -676,6 +677,9 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                 null /* fadeOutView */, !appTargetsAreTranslucent, launcherIconBounds,
                 true /* isOpening */);
         Rect crop = new Rect();
+        // Reused scratch rect for closing task crops. SurfaceControl.Transaction copies crop
+        // coordinates when setWindowCrop is called, so this object is safe to reuse per frame.
+        final Rect closingCrop = new Rect();
         Matrix matrix = new Matrix();
 
         RemoteAnimationTargets openingTargets = new RemoteAnimationTargets(appTargets,
@@ -745,8 +749,11 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
             }
         });
 
+        // Use the selected icon shape's window-compatible corner radius. The floating icon
+        // itself uses its exact path; SurfaceControl can only represent a uniform rounded rectangle.
+        final float iconShapeRadiusFraction = IconShapeManager.getWindowTransitionRadius(mLauncher);
         final float initialWindowRadius = supportsRoundedCornersOnWindows(mLauncher.getResources())
-                ? Math.max(crop.width(), crop.height()) / 2f
+                ? Math.max(crop.width(), crop.height()) / 2f * iconShapeRadiusFraction
                 : 0f;
         final float finalWindowRadius = mDeviceProfile.isMultiWindowMode
                 ? 0 : getWindowCornerRadius(mLauncher);
@@ -875,20 +882,20 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                         } else {
                             tmpPos.set(target.position.x, target.position.y);
                         }
-                        final Rect crop = new Rect(target.screenSpaceBounds);
-                        crop.offsetTo(0, 0);
+                        closingCrop.set(target.screenSpaceBounds);
+                        closingCrop.offsetTo(0, 0);
 
                         if ((rotationChange % 2) == 1) {
-                            int tmp = crop.right;
-                            crop.right = crop.bottom;
-                            crop.bottom = tmp;
+                            int tmp = closingCrop.right;
+                            closingCrop.right = closingCrop.bottom;
+                            closingCrop.bottom = tmp;
                             tmp = tmpPos.x;
                             tmpPos.x = tmpPos.y;
                             tmpPos.y = tmp;
                         }
                         matrix.setTranslate(tmpPos.x, tmpPos.y);
                         builder.setMatrix(matrix)
-                                .setWindowCrop(crop)
+                                .setWindowCrop(closingCrop)
                                 .setAlpha(1f);
                     }
                 }
@@ -1510,6 +1517,8 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
         Matrix matrix = new Matrix();
         Point tmpPos = new Point();
         Rect tmpRect = new Rect();
+        // Reuse the crop rect rather than allocating one for every animation frame.
+        Rect crop = new Rect();
         ValueAnimator closingAnimator = ValueAnimator.ofFloat(0, 1);
         int duration = CLOSING_TRANSITION_DURATION_MS;
         float windowCornerRadius = mDeviceProfile.isMultiWindowMode
@@ -1535,7 +1544,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                         tmpPos.set(target.position.x, target.position.y);
                     }
 
-                    final Rect crop = new Rect(target.localBounds);
+                    crop.set(target.localBounds);
                     crop.offsetTo(0, 0);
                     if (target.mode == MODE_CLOSING) {
                         tmpRect.set(target.screenSpaceBounds);
@@ -2101,7 +2110,8 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                          float startWindowCornerRadius) {
             mAppTargets = appTargets;
             mStartRadius = startWindowCornerRadius;
-            mEndRadius = Math.max(1, targetRect.width()) / 2f;
+            mEndRadius = Math.max(1, targetRect.width()) / 2f
+                    * IconShapeManager.getWindowTransitionRadius(mLauncher);
             mSurfaceApplier = new SurfaceTransactionApplier(mDragLayer);
             mWindowStartBounds.set(closingWindowStartRect);
             mWindowOriginalBounds.set(closingWindowOriginalRect);

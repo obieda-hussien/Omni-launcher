@@ -1,5 +1,6 @@
 package app.lawnchair.ui.preferences.destinations
 
+import android.content.Intent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,6 +19,7 @@ import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.preferences2.preferenceManager2
 import app.lawnchair.ui.preferences.components.QuickActionsPreferences
 import app.lawnchair.ui.preferences.components.RecentsQuickAction
+import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.controls.ListPreference
 import app.lawnchair.ui.preferences.components.controls.ListPreferenceEntry
 import app.lawnchair.ui.preferences.components.controls.SliderPreference
@@ -28,6 +30,7 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.util.preview.PreviewLawnchair
 import app.lawnchair.util.isOnePlusStock
+import com.android.launcher3.BuildConfig
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 
@@ -120,6 +123,26 @@ fun QuickstepPreferences(
                 entries = motionStyleEntries,
                 label = stringResource(id = R.string.omni_motion_style_label),
             )
+        }
+
+        if (BuildConfig.OMNI_SHIZUKU_ENABLED) {
+            PreferenceGroup(
+                heading = "Omni Performance Diagnostics",
+                description = "Optional read-only frame diagnostics through Shizuku. Animation durations and display settings are not changed.",
+            ) {
+                ClickablePreference(
+                    label = "Open performance diagnostics",
+                    subtitle = "Capture launcher frame statistics after reproducing a visual hitch.",
+                    onClick = {
+                        context.startActivity(
+                            Intent().setClassName(
+                                context,
+                                "app.lawnchair.shizuku.OmniShizukuControlsActivity",
+                            ),
+                        )
+                    },
+                )
+            }
         }
 
         QuickActionsPreferences(

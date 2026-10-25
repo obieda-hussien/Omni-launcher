@@ -48,6 +48,10 @@
   public static final ** CREATOR;
 }
 
+# Shizuku instantiates this UserService reflectively; preserve the service and AIDL methods.
+-keep class app.lawnchair.shizuku.OmniShizukuUserService { *; }
+-keep interface app.lawnchair.shizuku.IOmniShizukuService { *; }
+
 # Lawnchair specific rules.
 -keep class app.lawnchair.LawnchairProto$* { *; }
 -keep class app.lawnchair.LawnchairApp { *; }

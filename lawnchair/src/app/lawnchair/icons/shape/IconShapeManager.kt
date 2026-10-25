@@ -46,6 +46,8 @@ class IconShapeManager(private val context: Context) : SafeCloseable {
                 return Path(iconMask)
             }
 
+            override val windowTransitionRadius = systemShape.windowTransitionRadius
+
             override fun toString() = "system"
 
             override fun getHashString(): String {
@@ -86,7 +88,7 @@ class IconShapeManager(private val context: Context) : SafeCloseable {
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        // The manager owns no resources that require explicit disposal.
     }
 
     companion object {

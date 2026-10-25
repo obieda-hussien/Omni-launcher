@@ -92,6 +92,8 @@ public class LauncherBackAnimationController {
 
     private final QuickstepTransitionManager mQuickstepTransitionManager;
     private final Matrix mTransformMatrix = new Matrix();
+    // Reuse matrix scratch values across progress callbacks to avoid one array allocation per frame.
+    private final float[] mTmpMatrixValues = new float[9];
     /** The window position at the beginning of the back animation. */
     private final Rect mStartRect = new Rect();
     /** The current window position. */
@@ -406,7 +408,7 @@ public class LauncherBackAnimationController {
         mTransformMatrix.postTranslate(targetRect.left, targetRect.top);
 
         if (mBackTarget.leash.isValid()) {
-            mTransaction.setMatrix(mBackTarget.leash, mTransformMatrix, new float[9]);
+            mTransaction.setMatrix(mBackTarget.leash, mTransformMatrix, mTmpMatrixValues);
             mTransaction.setWindowCrop(mBackTarget.leash, mStartRect);
             mTransaction.setCornerRadius(mBackTarget.leash, cornerRadius);
         }

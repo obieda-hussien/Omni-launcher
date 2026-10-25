@@ -134,29 +134,33 @@ class ScalingWorkspaceRevealAnim(
         // it using the animation of the whole of home.
         // We start by caching the final target position, as this is the base for the transforms.
         val originalTarget = RectF(windowTargetRect)
+        // Reuse geometry scratch objects: this listener runs on every animation frame.
+        // Allocating a RectF and two Matrix objects per frame creates avoidable GC pressure
+        // during the home-return path on low-memory devices.
+        val transformed = RectF()
+        val workspaceScaleMatrix = Matrix()
+        val targetCorrectionMatrix = Matrix()
         animation.addOnFrameListener {
-            val transformed = RectF(originalTarget)
+            transformed.set(originalTarget)
 
-            // First we scale down using the same pivot as the workspace scale, so we find the
-            // correct position AND size.
-            transformed.transform(
-                Matrix().apply {
-                    setScale(workspace.scaleX, workspace.scaleY, workspace.pivotX, workspace.pivotY)
-                }
+            // First scale down with the workspace's own pivot to preserve the position and size.
+            workspaceScaleMatrix.setScale(
+                workspace.scaleX,
+                workspace.scaleY,
+                workspace.pivotX,
+                workspace.pivotY
             )
-            // Then we scale back up around the center of the current position. This is because the
-            // icon animation behaves poorly if it is given a target that is smaller than the size
-            // of the icon.
-            transformed.transform(
-                Matrix().apply {
-                    setScale(
-                        1 / workspace.scaleX,
-                        1 / workspace.scaleY,
-                        transformed.centerX(),
-                        transformed.centerY()
-                    )
-                }
+            transformed.transform(workspaceScaleMatrix)
+
+            // Restore the target size around its current center; the icon spring should not receive
+            // a target smaller than the source icon.
+            targetCorrectionMatrix.setScale(
+                1f / workspace.scaleX,
+                1f / workspace.scaleY,
+                transformed.centerX(),
+                transformed.centerY()
             )
+            transformed.transform(targetCorrectionMatrix)
 
             if (transformed != windowTargetRect) {
                 windowTargetRect?.set(transformed)

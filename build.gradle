@@ -295,17 +295,20 @@ android {
         github {
             applicationId 'app.lawnchair'
             dimension "channel"
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "true"
         }
 
         nightly {
             applicationId 'app.lawnchair.nightly'
             dimension "channel"
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "false"
         }
 
         play {
             applicationId "app.lawnchair.play"
             dimension "channel"
             isDefault true
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "false"
         }
 
         configureEach {
@@ -348,6 +351,8 @@ android {
 
         github {
             manifest.srcFile "github/AndroidManifest.xml"
+            java.srcDirs += ['lawnchair/src_github/java']
+            aidl.srcDirs += ['lawnchair/src_github/aidl']
         }
 
         nightly {
@@ -423,6 +428,9 @@ dependencies {
     coreLibraryDesugaring libs.android.desugarJdkLibs
 
     implementation libs.androidx.profileinstaller
+    // Privileged Shizuku code is GitHub-only to avoid growing Play/Nightly APKs.
+    githubImplementation libs.shizuku.api
+    githubImplementation libs.shizuku.provider
     baselineProfile projects.baselineProfile
 
     implementation libs.androidx.recyclerview
@@ -514,7 +522,10 @@ licensee {
     allow(SpdxId.GPL_20_or_later)
     allowDependency(libs.libsu.core)
     allowDependency(libs.libsu.service)
+    allowDependency(libs.shizuku.api)
+    allowDependency(libs.shizuku.provider)
     allowUrl("https://github.com/obieda-hussien/OmniLinkSDK/blob/main/LICENSE")
+    allowUrl("https://github.com/RikkaApps/Shizuku-API/blob/master/LICENSE")
     allowUrl("https://github.com/patrykmichalik/opto/blob/master/LICENSE")
     allowUrl("https://github.com/RikkaApps/HiddenApiRefinePlugin/blob/main/LICENSE")
     allowUrl("https://opensource.org/licenses/mit-license.php")
