@@ -295,17 +295,20 @@ android {
         github {
             applicationId 'app.lawnchair'
             dimension "channel"
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "true"
         }
 
         nightly {
             applicationId 'app.lawnchair.nightly'
             dimension "channel"
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "false"
         }
 
         play {
             applicationId "app.lawnchair.play"
             dimension "channel"
             isDefault true
+            buildConfigField "boolean", "OMNI_SHIZUKU_ENABLED", "false"
         }
 
         configureEach {
@@ -348,6 +351,8 @@ android {
 
         github {
             manifest.srcFile "github/AndroidManifest.xml"
+            java.srcDirs += ['lawnchair/src_github/java']
+            aidl.srcDirs += ['lawnchair/src_github/aidl']
         }
 
         nightly {
@@ -423,6 +428,9 @@ dependencies {
     coreLibraryDesugaring libs.android.desugarJdkLibs
 
     implementation libs.androidx.profileinstaller
+    // Privileged Shizuku code is GitHub-only to avoid growing Play/Nightly APKs.
+    githubImplementation libs.shizuku.api
+    githubImplementation libs.shizuku.provider
     baselineProfile projects.baselineProfile
 
     implementation libs.androidx.recyclerview
