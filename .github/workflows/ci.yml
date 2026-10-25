@@ -88,6 +88,8 @@ jobs:
       - name: Validate Omni motion profile curves
         run: python3 tools/validate_omni_motion_profiles.py
       - run: ./gradlew spotlessCheck
+      - name: Compile baseline-profile journeys and frame benchmarks
+        run: ./gradlew :baseline-profile:assemble
       - name: Verify actual APK Kotlin source inputs
         run: ./gradlew help --no-configuration-cache --init-script scripts/verify_apk_sources.gradle
 
