@@ -12,6 +12,12 @@ TELEGRAM_CHANGELOG.txt remain historical upstream release notes.
 - Release minification and resource shrinking remain enabled; keep rules cover only the reflective UserService/AIDL entry points.
 - Runtime authorization still requires the user to start Shizuku and approve its permission prompt. Device validation on Android 11 remains required.
 
+## Shape-aware app handoff and frame-work reduction — 25 October 2026
+
+- Use the selected icon shape's existing `windowTransitionRadius` for the opening app window and the return-to-icon spring, instead of always treating the icon as a circle. The floating icon remains clipped to its real path; the SurfaceControl window uses the closest supported uniform corner radius.
+- Reuse crop rectangles in app-opening and fallback-closing frame callbacks, and reuse the predictive-back matrix scratch array instead of allocating a new `float[9]` per gesture update.
+- These changes target visual handoff coherence and avoidable per-frame garbage; they do not alter animation durations or claim a guaranteed FPS gain.
+
 ## Direct search/dock handoff — 17 October 2026
 
 - Route Ask Omni and the Omni dock directly from the visible Home Activity through one controller, avoiding a transparent intermediary over the Launcher.
