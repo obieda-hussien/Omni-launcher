@@ -265,8 +265,10 @@ class OmniShizukuControlsActivity : Activity() {
         worker.execute {
             val message = runCatching {
                 if (current.resetFrameStats()) {
-                    "Frame counters reset. This does not change animation or display settings.\n\n"
-                        + current.getStatus()
+                    buildString {
+                        append("Frame counters reset. This does not change animation or display settings.\n\n")
+                        append(current.getStatus())
+                    }
                 } else {
                     "Could not reset gfxinfo counters. Check that Shizuku is still running."
                 }
