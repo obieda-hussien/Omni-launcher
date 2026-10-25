@@ -886,9 +886,9 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                         closingCrop.offsetTo(0, 0);
 
                         if ((rotationChange % 2) == 1) {
-                            int tmp = crop.right;
-                            crop.right = crop.bottom;
-                            crop.bottom = tmp;
+                            int tmp = closingCrop.right;
+                            closingCrop.right = closingCrop.bottom;
+                            closingCrop.bottom = tmp;
                             tmp = tmpPos.x;
                             tmpPos.x = tmpPos.y;
                             tmpPos.y = tmp;
