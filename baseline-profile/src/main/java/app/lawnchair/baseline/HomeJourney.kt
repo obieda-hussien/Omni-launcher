@@ -21,3 +21,40 @@ internal fun MacrobenchmarkScope.exerciseDrawerAndSearch() {
     device.pressBack()
     pressHome()
 }
+
+/**
+ * Launch Settings from the app drawer, then return Home. This exercises the launcher-owned
+ * icon-to-window morph and the closing-window-to-icon spring without changing their durations.
+ * The benchmark image is expected to include the Android Settings app.
+ */
+internal fun MacrobenchmarkScope.exerciseAppLaunchAndReturnHome() {
+    check(device.wait(Until.hasObject(By.res(Constants.PACKAGE_NAME, "workspace")), 5_000)) {
+        "Launcher workspace was not visible before the app-launch journey"
+    }
+
+    val width = device.displayWidth
+    val height = device.displayHeight
+    device.swipe(width / 2, height * 4 / 5, width / 2, height / 4, 16)
+    check(device.wait(Until.hasObject(By.res(Constants.PACKAGE_NAME, "input")), 5_000)) {
+        "App drawer search field was not visible"
+    }
+
+    val search = device.findObject(By.res(Constants.PACKAGE_NAME, "input"))
+    check(search != null) { "Could not find the app drawer search field" }
+    search.text = "Settings"
+    device.waitForIdle()
+
+    val settings = device.findObject(By.text("Settings"))
+    check(settings != null) { "Settings was not found in the launcher app drawer" }
+    settings.click()
+    check(device.wait(Until.hasObject(By.pkg("com.android.settings")), 10_000)) {
+        "Settings did not open from the launcher"
+    }
+    device.waitForIdle()
+
+    pressHome()
+    check(device.wait(Until.hasObject(By.res(Constants.PACKAGE_NAME, "workspace")), 5_000)) {
+        "Launcher workspace was not restored after Settings"
+    }
+    device.waitForIdle()
+}
