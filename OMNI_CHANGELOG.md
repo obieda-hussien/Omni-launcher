@@ -5,12 +5,12 @@ updates, modifications and ecosystem integration. Original Lawnchair/AOSP author
 credits and rights; see [NOTICE.md](NOTICE.md). Upstream GITHUB_CHANGELOG.md and
 TELEGRAM_CHANGELOG.txt remain historical upstream release notes.
 
-## GitHub-only Shizuku controls — 25 October 2026
+## GitHub-only Shizuku performance diagnostics — 25 October 2026
 
 - Add Shizuku API/provider only to the GitHub flavor; Play and Nightly variants do not package the dependency or provider.
-- Add a constrained UserService for reading and applying three fixed global animation-scale presets. It does not accept arbitrary shell commands or change CPU/GPU governors.
-- Release minification and resource shrinking remain enabled; keep rules cover only the reflective UserService/AIDL entry points.
-- Runtime authorization still requires the user to start Shizuku and approve its permission prompt. Device validation on Android 11 remains required.
+- The GitHub-only diagnostics screen reads device/refresh-rate/animation-scale state and captures or resets the launcher's `dumpsys gfxinfo ... framestats` counters. It does not write animation scales, alter duration, overclock CPU/GPU, or change thermal policy.
+- The UserService exposes only fixed internal diagnostic commands, bounds output, uses command timeouts, and still requires the user to start Shizuku and approve its permission prompt.
+- Release minification/resource shrinking remain enabled; keep rules cover the reflective UserService/AIDL entry points.
 
 ## Shape-aware app handoff and frame-work reduction — 25 October 2026
 
