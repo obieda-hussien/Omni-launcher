@@ -1,5 +1,6 @@
 package app.lawnchair.ui.preferences.destinations
 
+import android.content.Intent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -11,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.lawnchair.LawnchairApp
+import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.animation.OmniMotionProfile
 import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.observeAsState
@@ -28,6 +30,7 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.util.preview.PreviewLawnchair
 import app.lawnchair.util.isOnePlusStock
+import com.android.launcher3.BuildConfig
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 
@@ -120,6 +123,26 @@ fun QuickstepPreferences(
                 entries = motionStyleEntries,
                 label = stringResource(id = R.string.omni_motion_style_label),
             )
+        }
+
+        if (BuildConfig.OMNI_SHIZUKU_ENABLED) {
+            PreferenceGroup(
+                heading = "Omni System Controls",
+                description = "Optional system-wide animation tuning through Shizuku. Does not overclock the CPU or GPU.",
+            ) {
+                ClickablePreference(
+                    label = "Open Shizuku controls",
+                    subtitle = "Requires Shizuku to be started and permission granted by you.",
+                    onClick = {
+                        context.startActivity(
+                            Intent().setClassName(
+                                context,
+                                "app.lawnchair.shizuku.OmniShizukuControlsActivity",
+                            ),
+                        )
+                    },
+                )
+            }
         }
 
         QuickActionsPreferences(
