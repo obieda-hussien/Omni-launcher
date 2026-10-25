@@ -226,7 +226,7 @@ class OmniShizukuControlsActivity : Activity() {
     private fun refreshStatus() {
         val current = service ?: return
         worker.execute {
-            val message = runCatching { current.status }
+            val message = runCatching { current.getStatus() }
                 .getOrElse { "Could not read settings: ${it.javaClass.simpleName}: ${it.message.orEmpty()}" }
             runOnUiThread { statusView.text = message }
         }
@@ -244,7 +244,7 @@ class OmniShizukuControlsActivity : Activity() {
         worker.execute {
             val message = runCatching {
                 if (current.applyAnimationPreset(preset)) {
-                    "$successMessage\n\n${current.status}"
+                    "$successMessage\n\n${current.getStatus()}"
                 } else {
                     "Could not apply all settings. Check Shizuku state and try again."
                 }
