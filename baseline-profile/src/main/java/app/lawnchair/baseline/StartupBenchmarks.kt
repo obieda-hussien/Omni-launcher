@@ -60,6 +60,23 @@ class StartupBenchmarks {
     }
 
     @Test
+    fun appLaunchAndReturnHomeFrameTiming() {
+        rule.measureRepeated(
+            packageName = Constants.PACKAGE_NAME,
+            metrics = listOf(FrameTimingMetric()),
+            compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
+            iterations = 10,
+            setupBlock = {
+                pressHome()
+                startActivityAndWait()
+            },
+            measureBlock = {
+                exerciseAppLaunchAndReturnHome()
+            },
+        )
+    }
+
+    @Test
     fun returnHomeFromSettings() {
         rule.measureRepeated(
             packageName = Constants.PACKAGE_NAME,
